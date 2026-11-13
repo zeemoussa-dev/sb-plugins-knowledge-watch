@@ -2,6 +2,21 @@
 
 All notable changes to the Knowledge Watch plugin.
 
+## [1.4.0] - 2026-11-13
+
+Built for framework API 14.14.0, where a plugin ships the guardrail exceptions its own agents need.
+
+- feat: **the researcher's guardrail exception comes with the install.** `plugin.json` declares `injection_classifier`, `bypass`, for `knowledge-researcher`. On 1.0 the guard withheld ordinary `web_search` results as planted instructions (scored 1.00), and the scan filed nothing. The exception had to be given by hand on Guardrails.
+  - The wizard's **Guardrails and grants** step lists it, ticked, with its reason, and the Admin may untick it.
+  - Uninstalling takes it back.
+- Nothing else is declared, because nothing else was seen to fail:
+  - `knowledge-editor` has no web access; its hand-made exception on the install was a precaution.
+  - The two Experts read the web too, but have not run yet. If their web lookups are withheld, an Admin gives them the same exception, and the next version declares it.
+  - `agent_grants` is empty: the Primaries ask the Experts and need none of the plugin's tools.
+- change: `framework_api` is 14.14.0. An update now stays in the plugin's current Section.
+- docs: troubleshooting says the researcher's exception is given on install.
+- tests: 36.
+
 ## [1.3.0] - 2026-11-13
 
 The operator: "Add a Knowledge and Industry agent and allow a command in Settings to link them to the Primary (default and the user's current Primary)", then "give those agents skills like creating topics, or running research on a kind of thing and storing it in its place in the vault, and refreshing the knowledge data".

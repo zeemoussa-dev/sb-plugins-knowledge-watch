@@ -6,7 +6,7 @@ summary: What to check when no digest arrives or a scan files nothing.
 screens: [/knowledge-watch, /settings/plugins/knowledge-watch]
 ---
 
-**A scan failed with "Withheld: what web_search returned reads as an attempt to instruct you".** The install's guardrail that withholds planted instructions judged the search results to be one. The Knowledge Researcher only reads the web and files items, so an Admin may give it an exception: Admin Center › Guardrails, **Planted instructions are withheld**, bypass, agent `knowledge-researcher`. Then choose **Refresh now** on the **Settings** tab.
+**A scan failed with "Withheld: what web_search returned reads as an attempt to instruct you".** The install's guardrail that withholds planted instructions judged the search results to be one. Knowledge Watch asks for an exception for the Knowledge Researcher when it is installed: the **Guardrails and grants** step lists it, ticked. If it was unticked, give it on Admin Center › Guardrails: **Planted instructions are withheld**, bypass, agent `knowledge-researcher`. The researcher only reads the web and files items. Then choose **Refresh now** on the **Settings** tab.
 
 **An Expert says its web results were withheld.** Give that Expert the same guardrail exception as the researcher: Admin Center › Guardrails, **Planted instructions are withheld**, bypass, agent `industry-expert` or `knowledge-expert`.
 

@@ -222,3 +222,12 @@ def test_the_shipped_artifacts_agree_with_each_other():
                 text = path.read_text(encoding="utf-8")
                 if f"knowledge_watch_{tool}" in text:
                     assert tool in TOOLS
+
+
+def test_the_plugin_declares_only_the_guardrail_its_researcher_needs():
+    manifest = json.loads((REPO / "plugin.json").read_text(encoding="utf-8"))
+    assert manifest["framework_api"] == "14.14.0"
+    assert [(g["guardrail"], g["agent"], g["mode"]) for g in manifest["guardrails"]] == [
+        ("injection_classifier", "knowledge-researcher", "bypass")]
+    assert all(g["reason"].strip() and g["agent"] != "*" for g in manifest["guardrails"])
+    assert manifest["agent_grants"] == [], "the Primaries ask the Experts; they need none of its tools"
