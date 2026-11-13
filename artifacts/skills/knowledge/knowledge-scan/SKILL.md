@@ -1,8 +1,8 @@
 ---
-name: industry-scan
-description: Scans the open web for each knowledge category and topic the CBO chose on Industry Watch -- AI models and providers, hyperscalers and cloud, sovereign AI and policy, data centres and GPUs, the Gulf and UAE market, competitors and partners -- and files dated, sourced news items. Use in the Industry scan Pipeline.
+name: knowledge-scan
+description: Scans the open web for each knowledge category and topic the CBO chose on Knowledge Watch -- AI models and providers, hyperscalers and cloud, sovereign AI and policy, data centres and GPUs, the Gulf and UAE market, competitors and partners -- and files dated, sourced news items. Use in the Knowledge scan Pipeline.
 version: 1.0.0
-author: industry-watch
+author: knowledge-watch
 license: MIT
 platforms: [linux, windows]
 metadata:
@@ -10,11 +10,11 @@ metadata:
     tags: [industry, news, research, web]
 ---
 
-# Industry scan
+# Knowledge scan
 
 ## Steps
 
-1. Call `industry_watch_scan_brief`. If `categories` is empty, reply `NOTHING DUE`
+1. Call `knowledge_watch_scan_brief`. If `categories` is empty, reply `NOTHING DUE`
    and stop. Each category carries its `topics` (each with the CBO's own `notes` on
    what he wants to know), the `since` date to look back to, the `prompt` to scan it
    with and what it `already_filed`.
@@ -23,7 +23,7 @@ metadata:
    region where it fits. Two or three searches per topic is enough; a topic with
    nothing new needs one.
 3. Read the page of each story you mean to file with `read_page`.
-4. File the category with `industry_watch_save_items`: `category` (its id), `items`
+4. File the category with `knowledge_watch_save_items`: `category` (its id), `items`
    and the `queries` you ran. Each item:
    - `url`, `title`, `source` (the outlet), `published` (the source's own date,
      YYYY-MM-DD);

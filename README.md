@@ -1,4 +1,4 @@
-# Industry Watch
+# Knowledge Watch
 
 A Second Brain OS plugin that keeps the CBO up to date on the technology and industry
 landscape: AI models and providers, hyperscalers and cloud, sovereign AI and policy,
@@ -20,12 +20,12 @@ The Guide in the Wiki (`wiki/`) is the user's manual; the design is
 
 | Kind | What |
 |---|---|
-| Agents (background) | `industry-researcher`: the web, no vault. `industry-editor`: no web, no shell. |
-| Skills | `industry-scan`, `industry-digest` |
-| Pipelines | `industry-scan`: `CRON_TZ=Asia/Dubai 0 6 * * 0,2,4`. `industry-weekly`: `CRON_TZ=Asia/Dubai 0 18 * * 0`. Both ship **switched off**. |
-| Agent tools | `industry_watch_scan_brief`, `_save_items`, `_digest_facts`, `_save_digest`, `_recent_items` |
-| Screens | `/industry-watch` (Weekly digest, News, Interests), the Settings page `/settings/plugins/industry-watch` |
-| Data | `data/IndustryWatch/interests.json`, `items.json`, `digests.json`; one note a week in `Work/Industry Watch/` |
+| Agents (background) | `knowledge-researcher`: the web, no vault. `knowledge-editor`: no web, no shell. |
+| Skills | `knowledge-scan`, `knowledge-digest` |
+| Pipelines | `knowledge-scan`: `CRON_TZ=Asia/Dubai 0 6 * * 0,2,4`. `knowledge-weekly`: `CRON_TZ=Asia/Dubai 0 18 * * 0`. Both ship **switched off**. |
+| Agent tools | `knowledge_watch_scan_brief`, `_save_items`, `_digest_facts`, `_save_digest`, `_recent_items` |
+| Screens | `/knowledge-watch` (Weekly digest, News, Interests), the Settings page `/settings/plugins/knowledge-watch` |
+| Data | `data/KnowledgeWatch/interests.json`, `items.json`, `digests.json`; one note a week in `Work/Knowledge Watch/` |
 
 It reads no other plugin: no Entities registry, no Strategic Entities list (operator's
 decision, 2026-11-13).

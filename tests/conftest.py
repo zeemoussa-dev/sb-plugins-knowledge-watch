@@ -89,7 +89,7 @@ def registered(api):
 
 
 def call(api, name, **args):
-    return json.loads(api.tools[name]["handler"](args, {"agent_id": "industry-researcher", "person_id": None}))
+    return json.loads(api.tools[name]["handler"](args, {"agent_id": "knowledge-researcher", "person_id": None}))
 
 
 def route(api, path: str, method: str = "GET"):

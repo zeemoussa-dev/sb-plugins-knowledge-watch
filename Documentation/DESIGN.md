@@ -1,4 +1,4 @@
-# Industry Watch -- design
+# Knowledge Watch -- design
 
 ## 1. What the operator approved (2026-11-13)
 
@@ -6,23 +6,24 @@
 |---|---|
 | Cadence | **Weekly digest only.** No daily alerts. The web is scanned a few times a week. |
 | When | **Sunday 18:00 Dubai.** Strategic weekly is Monday 07:00, so the two do not land together. |
-| Vault | **One weekly note** under `Work/Industry Watch/`, so other agents find it through search. |
+| Vault | **One weekly note** under `Work/Knowledge Watch/`, so other agents find it through search. |
 | Links | **"Don't link it to the other Plugins."** No Entities registry, no Strategic Entities list. |
 | Interests | **"We need the ability to include the knowledge categories and topics he is interested in."** Categories and topics are his to edit, on the main screen. |
 | Screens | **Follow the framework's UI guidelines.** |
+| Name | **Knowledge Watch**, not Industry Watch: "we have Topics and Technology Researches as well". |
 
 ## 2. Shape
 
 ```
-Interests (categories -> topics)         data/IndustryWatch/interests.json
+Interests (categories -> topics)         data/KnowledgeWatch/interests.json
         | scan_brief
         v
-industry-researcher (web)  --save_items-->  data/IndustryWatch/items.json
-   Industry scan, Sun/Tue/Thu 06:00 Dubai
+knowledge-researcher (web)  --save_items-->  data/KnowledgeWatch/items.json
+   Knowledge scan, Sun/Tue/Thu 06:00 Dubai
         | digest_facts (items since the last digest)
         v
-industry-editor (no web)   --save_digest--> data/IndustryWatch/digests.json
-   Industry weekly, Sun 18:00 Dubai          + Work/Industry Watch/Industry Watch <date>.md
+knowledge-editor (no web)   --save_digest--> data/KnowledgeWatch/digests.json
+   Knowledge weekly, Sun 18:00 Dubai          + Work/Knowledge Watch/Knowledge Watch <date>.md
         | last reply
         v
 framework Pipeline delivery -> chat (person:<id>) and email (cbo-agent mailbox)

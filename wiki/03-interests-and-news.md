@@ -1,9 +1,9 @@
 ---
 title: Interests and news
-plugin: Industry Watch
+plugin: Knowledge Watch
 order: 3
 summary: How the knowledge categories and topics work, and what each news item shows.
-screens: [/industry-watch]
+screens: [/knowledge-watch]
 ---
 
 ## Interests

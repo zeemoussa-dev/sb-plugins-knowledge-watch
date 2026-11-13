@@ -1,4 +1,4 @@
-"""Industry Watch -- a Second Brain plugin.
+"""Knowledge Watch -- a Second Brain plugin.
 
 Keeps the CBO up to date on the technology and industry landscape, in the knowledge
 categories and topics he chooses.

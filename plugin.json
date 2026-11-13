@@ -1,7 +1,7 @@
 {
-  "id": "industry-watch",
-  "name": "Industry Watch",
-  "description": "Keeps the CBO up to date on the technology and industry landscape: AI models and providers, hyperscalers and cloud, sovereign AI and policy, data centres, GPUs and power, the Gulf and UAE market, and the competitors and partners that matter. He chooses the knowledge categories and the topics in each. A researcher agent scans the web a few times a week and files dated, sourced items; an editor agent writes one weekly digest, sent by chat and email and filed as a note in the vault.",
+  "id": "knowledge-watch",
+  "name": "Knowledge Watch",
+  "description": "Keeps the CBO up to date on his industry, the technologies and the topics he follows: AI models and providers, hyperscalers and cloud, sovereign AI and policy, data centres, GPUs and power, the Gulf and UAE market, and the competitors and partners that matter. He chooses the knowledge categories and the topics in each. A researcher agent scans the web a few times a week and files dated, sourced items; an editor agent writes one weekly digest, sent by chat and email and filed as a note in the vault.",
   "version": "1.0.0",
   "framework_api": "14.9.0",
   "category": "Knowledge",
@@ -10,10 +10,10 @@
   "flavours": [
     {
       "id": "default",
-      "name": "Industry Watch",
+      "name": "Knowledge Watch",
       "description": "The one way this plugin works. Every setting is optional: empty means the default, and each can be changed later on the plugin's Settings page.",
       "config": [
-        { "key": "vault_folder", "label": "Vault folder", "hint": "Where the weekly digest note is filed. Empty means Work/Industry Watch." },
+        { "key": "vault_folder", "label": "Vault folder", "hint": "Where the weekly digest note is filed. Empty means Work/Knowledge Watch." },
         { "key": "preferred_domains", "label": "Preferred sources", "hint": "Comma list of domains the researcher looks at first. Empty means the list the plugin ships." },
         { "key": "blocked_domains", "label": "Blocked sources", "hint": "Comma list of domains never filed. Empty means none." },
         { "key": "horizon_days", "label": "Look back (days)", "hint": "How far back a scan looks when a category was never scanned. Empty means 7." },

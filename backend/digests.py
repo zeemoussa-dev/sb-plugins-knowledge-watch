@@ -2,8 +2,8 @@
 
 The editor agent writes it from the items the researcher filed since the last digest;
 this module hands over those items, grouped by category, and files what comes back:
-in `data/IndustryWatch/digests.json` for the screen, and as one note in the vault
-(`<vault folder>/Industry Watch <date>.md`) so other agents find it through search.
+in `data/KnowledgeWatch/digests.json` for the screen, and as one note in the vault
+(`<vault folder>/Knowledge Watch <date>.md`) so other agents find it through search.
 The text the CBO receives is the Pipeline's last reply, sent by the framework.
 """
 from __future__ import annotations
@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 
 from . import interests, items, settings
 
-STORE = "data/IndustryWatch/digests.json"
+STORE = "data/KnowledgeWatch/digests.json"
 KEEP = 104
 HEADLINES = "Headlines"
 NEXT = "Watch next week"
@@ -88,7 +88,7 @@ def facts(api) -> dict:
 
 
 def markdown(week: str, chosen: dict[str, str], order: list[str]) -> str:
-    parts = [f"Industry Watch, week to {week}"]
+    parts = [f"Knowledge Watch, week to {week}"]
     for name in order:
         if chosen.get(name):
             parts.append(f"## {name}\n\n{chosen[name]}")
@@ -114,11 +114,11 @@ def save(api, sent_sections, *, sources=None) -> dict:
     note = ""
     folder = settings.vault_folder(api)
     try:
-        note = api.vault.write_note(folder, f"Industry Watch {week}", {
+        note = api.vault.write_note(folder, f"Knowledge Watch {week}", {
             "type": "Digest",
-            "name": f"Industry Watch, week to {week}",
+            "name": f"Knowledge Watch, week to {week}",
             "date": week,
-            "tags": ["kind/industry-watch"],
+            "tags": ["kind/knowledge-watch"],
         }, text)
     except Exception as exc:  # the digest is still filed and sent; the screen says why the note is not
         note = f"not filed in the vault: {exc}"

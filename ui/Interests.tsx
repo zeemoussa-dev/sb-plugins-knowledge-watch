@@ -41,11 +41,11 @@ function CategoryDrawer({ start, isNew, onClose, onSave, onDelete, saving }: {
         <Checkbox checked={draft.enabled} onChange={(checked) => setDraft({ ...draft, enabled: checked })}
                   label="Scan this category"
                   hint="Off keeps its topics but leaves it out of the scans and the digest." />
-        <div className="iw-topics">
-          <h3 className="iw-topics-title">Topics</h3>
+        <div className="kw-topics">
+          <h3 className="kw-topics-title">Topics</h3>
           <p className="text-muted">Each topic is searched on its own. The note says what you want to know about it.</p>
           {draft.topics.map((one, index) => (
-            <div className="iw-topic" key={index}>
+            <div className="kw-topic" key={index}>
               <Field label={`Topic ${index + 1}`}>
                 <input className="input" value={one.name} onChange={(event) => topic(index, { name: event.target.value })} />
               </Field>
@@ -110,7 +110,7 @@ export function Interests({ onCount }: { onCount?: (count: number) => void }) {
   async function reset() {
     if (!(await confirm({
       title: 'Put back the shipped categories?',
-      body: 'Your categories and topics are replaced by the six Industry Watch ships. News already filed stays.',
+      body: 'Your categories and topics are replaced by the six Knowledge Watch ships. News already filed stays.',
       confirmLabel: 'Put back the shipped ones',
     }))) return;
     setSaving(true);

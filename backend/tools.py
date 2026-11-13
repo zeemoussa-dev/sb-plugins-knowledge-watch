@@ -1,7 +1,7 @@
 """The agent tools: how this plugin's two agents gather and file.
 
-Each is offered as `industry_watch_<name>` and given to an agent on its grants
-(`plugins: ["industry-watch"]`). The handlers hand over and file; they decide nothing
+Each is offered as `knowledge_watch_<name>` and given to an agent on its grants
+(`plugins: ["knowledge-watch"]`). The handlers hand over and file; they decide nothing
 about what matters. Arguments come from a model, so each is checked, and a bad one is
 answered as an error the agent reads.
 """

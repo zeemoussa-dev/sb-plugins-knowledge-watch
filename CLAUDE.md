@@ -4,7 +4,7 @@ Guidance for Claude Code working in this repository.
 
 ## What this repository is
 
-**The Industry Watch plugin** for Second Brain OS: the CBO's industry news, in the
+**The Knowledge Watch plugin** for Second Brain OS: the CBO's news on his industry, the technologies and the topics he follows, in the
 knowledge categories and topics he chooses, scanned by a researcher agent and written
 up weekly by an editor agent. The design is `Documentation/DESIGN.md`.
 

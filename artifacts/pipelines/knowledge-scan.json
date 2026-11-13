@@ -1,0 +1,18 @@
+{
+  "id": "knowledge-scan",
+  "name": "Knowledge scan",
+  "description": "Three times a week (Sunday, Tuesday and Thursday at 06:00 Dubai) the Knowledge Researcher scans the web for every knowledge category and topic the CBO chose on Knowledge Watch, and files dated, sourced news items. Nothing is sent: the items wait for the weekly digest, and are on the Knowledge Watch screen. Needs a web search provider in Settings.",
+  "section": "Core42",
+  "schedule": "CRON_TZ=Asia/Dubai 0 6 * * 0,2,4",
+  "steps": [
+    {
+      "id": "scan",
+      "name": "Scan the web for each category",
+      "description": "The Knowledge Researcher searches each category that is on and files what it found through the plugin.",
+      "depends_on": [],
+      "type": "producer",
+      "agent_id": "knowledge-researcher",
+      "instruction": "Follow the knowledge-scan Skill: call `knowledge_watch_scan_brief`; if it lists no category reply NOTHING DUE. Otherwise scan each category with `web_search` and `read_page`, and file each one with `knowledge_watch_save_items`, with an empty list when nothing new was found. Write nothing any other way. Report one line per category."
+    }
+  ]
+}

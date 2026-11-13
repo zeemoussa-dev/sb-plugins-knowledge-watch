@@ -10,7 +10,7 @@ import {
 } from './client';
 import { Interests } from './Interests';
 
-export const PAGE = '/industry-watch';
+export const PAGE = '/knowledge-watch';
 const TABS = ['digest', 'news', 'interests'] as const;
 type Tab = (typeof TABS)[number];
 const PERIODS = ['7', '30', '90', '180'] as const;
@@ -26,7 +26,7 @@ function Overview({ status, digests }: { status: Status | null; digests: DigestE
   const off = status.pipelines.filter((p) => !p.installed || !p.cron_enabled);
   return (
     <>
-      <StatTiles label="Industry Watch at a glance" stats={[
+      <StatTiles label="Knowledge Watch at a glance" stats={[
         { key: 'categories', label: 'Categories scanned', value: status.categories },
         { key: 'topics', label: 'Topics followed', value: status.topics },
         { key: 'week', label: 'Items in the last 7 days', value: status.items_week },
@@ -37,7 +37,7 @@ function Overview({ status, digests }: { status: Status | null; digests: DigestE
         <Notice tone="info">
           {off.map((p) => p.name ?? p.id).join(' and ')} {off.length > 1 ? 'are' : 'is'} switched off, so
           {off.length > 1 ? ' they do' : ' it does'} not run. An Admin switches {off.length > 1 ? 'them' : 'it'} on
-          in Admin Center, on the Industry Watch settings page.
+          in Admin Center, on the Knowledge Watch settings page.
         </Notice>
       )}
     </>
@@ -61,7 +61,7 @@ function Digests({ rows, failed }: { rows: DigestEntry[] | null; failed: string 
   if (!rows.length) {
     return (
       <EmptyState icon="newspaper" title="No digest yet">
-        Industry weekly writes one every Sunday at 18:00 Dubai from what the scans filed that week.
+        Knowledge weekly writes one every Sunday at 18:00 Dubai from what the scans filed that week.
       </EmptyState>
     );
   }
@@ -78,7 +78,7 @@ function Digests({ rows, failed }: { rows: DigestEntry[] | null; failed: string 
       {!open && !error && <LoadingState rows={8} label="Loading the digest" />}
       {open && (
         <Card title={`Week to ${open.week}`}
-              description={`Written by the Industry Editor on ${when(open.at)} from ${open.items} items the Industry Researcher filed.`}>
+              description={`Written by the Knowledge Editor on ${when(open.at)} from ${open.items} items the Knowledge Researcher filed.`}>
           {open.note.startsWith('not filed') && <Notice tone="warning">The vault note was {open.note}.</Notice>}
           <NoteText text={open.markdown} />
           {open.note && !open.note.startsWith('not filed') && (
@@ -135,7 +135,7 @@ function News({ onCount }: { onCount: (count: number) => void }) {
         </EmptyState>
       ) : (
         <EmptyState icon="newspaper" title="No news filed yet">
-          Industry scan files items on Sunday, Tuesday and Thursday at 06:00 Dubai once it is switched on.
+          Knowledge scan files items on Sunday, Tuesday and Thursday at 06:00 Dubai once it is switched on.
         </EmptyState>
       ))}
       {found && found.items.length > 0 && (
@@ -143,23 +143,23 @@ function News({ onCount }: { onCount: (count: number) => void }) {
         <Card padded={false}>
           <div className="item-list">
             {found.items.map((item) => (
-              <article className="item-row iw-item" key={item.id}>
-                <div className="iw-item-head">
+              <article className="item-row kw-item" key={item.id}>
+                <div className="kw-item-head">
                   <StatusBadge tone={IMPORTANCE_TONE[item.importance]}>{item.importance}</StatusBadge>
-                  <a href={item.url} target="_blank" rel="noreferrer noopener" className="iw-item-title">{item.title}</a>
+                  <a href={item.url} target="_blank" rel="noreferrer noopener" className="kw-item-title">{item.title}</a>
                 </div>
-                <p className="text-muted iw-item-meta">
+                <p className="text-muted kw-item-meta">
                   {item.source}{item.published ? `, ${item.published}` : ''} · {item.category_name}
                   {item.topic ? ` › ${item.topic}` : ''}
                 </p>
-                <p className="iw-item-text">{item.summary}</p>
+                <p className="kw-item-text">{item.summary}</p>
                 {item.why_it_matters && (
-                  <p className="iw-item-text text-muted">
+                  <p className="kw-item-text text-muted">
                     <strong>Why it matters, the researcher&apos;s inference:</strong> {item.why_it_matters}
                   </p>
                 )}
                 {item.companies.length > 0 && (
-                  <div className="iw-tags">{item.companies.map((one) => <span className="badge" key={one}>{one}</span>)}</div>
+                  <div className="kw-tags">{item.companies.map((one) => <span className="badge" key={one}>{one}</span>)}</div>
                 )}
               </article>
             ))}
@@ -170,9 +170,9 @@ function News({ onCount }: { onCount: (count: number) => void }) {
   );
 }
 
-/** The CBO's industry news: the weekly digests, every item filed, and the knowledge
+/** The CBO's industry, technology and topic news: the weekly digests, every item filed, and the knowledge
  *  categories and topics he wants followed, one section per tab. */
-export function IndustryWatchPage() {
+export function KnowledgeWatchPage() {
   const [tab, setTab] = useUrlState<Tab>('tab', 'digest', { valid: TABS });
   const [status, setStatus] = useState<Status | null>(null);
   const [digests, setDigests] = useState<DigestEntry[] | null>(null);
@@ -190,11 +190,11 @@ export function IndustryWatchPage() {
 
   return (
     <>
-      <PageHeader title="Industry Watch"
-                  description="AI, cloud, sovereign AI, data centres, the Gulf market and the companies that matter, in the categories and topics you choose." />
+      <PageHeader title="Knowledge Watch"
+                  description="The industry, the technologies and the topics you follow, in the knowledge categories you choose." />
       <div className="stack">
         <Overview status={status} digests={digests} />
-        <Tabs label="Industry Watch" value={tab} onChange={(value) => setTab(value as Tab)}
+        <Tabs label="Knowledge Watch" value={tab} onChange={(value) => setTab(value as Tab)}
               tabs={[{ value: 'digest', label: 'Weekly digest', count: digests?.length },
                 { value: 'news', label: 'News', count: newsCount ?? status?.items_week },
                 { value: 'interests', label: 'Interests', count: categoryCount }]} />

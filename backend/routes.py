@@ -1,4 +1,4 @@
-"""The Industry Watch HTTP surface, mounted at `/plugins/industry-watch/`.
+"""The Knowledge Watch HTTP surface, mounted at `/plugins/knowledge-watch/`.
 
 Routes are open to anyone signed in, so each change checks first: the CBO's interests
 may be changed by anyone who may write the install's vault, the plugin-wide settings

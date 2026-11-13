@@ -6,8 +6,8 @@ switched on is fired, because switching it on is the person's decision.
 """
 from __future__ import annotations
 
-SCAN = "industry-scan"
-WEEKLY = "industry-weekly"
+SCAN = "knowledge-scan"
+WEEKLY = "knowledge-weekly"
 ALL = (SCAN, WEEKLY)
 
 

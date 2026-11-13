@@ -6,7 +6,7 @@ inference, marked as such on every screen), how much it matters, and the organis
 it names. The researcher decides all of that; this module only checks the shape, refuses
 a story without a link or from a blocked source, and keeps one copy of each link.
 
-Stored in `data/IndustryWatch/items.json`, newest first, for `KEEP_DAYS`.
+Stored in `data/KnowledgeWatch/items.json`, newest first, for `KEEP_DAYS`.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from . import interests, settings
 
-STORE = "data/IndustryWatch/items.json"
+STORE = "data/KnowledgeWatch/items.json"
 KEEP_DAYS = 180
 MAX_SCANS = 200
 IMPORTANCE = ("high", "medium", "low")

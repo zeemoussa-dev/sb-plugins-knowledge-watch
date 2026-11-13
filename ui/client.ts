@@ -1,6 +1,6 @@
 import { apiFetch, ApiError } from '../../pluginHost/api';
 
-const BASE = '/plugins/industry-watch';
+const BASE = '/plugins/knowledge-watch';
 
 function send<T>(path: string, method: string, body?: unknown): Promise<T> {
   return apiFetch<T>(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });

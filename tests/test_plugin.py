@@ -133,9 +133,9 @@ def test_the_digest_round_trip(registered, tmp_path):
     saved = call(api, "save_digest", sections={"Headlines": "- **Oracle** opens a region.",
                                                "Hyperscalers and cloud": "Oracle opened it."},
                  sources=["https://reuters.com/tech/story-1"])
-    assert saved["markdown"].startswith(f"Industry Watch, week to {facts['week']}\n\n## Headlines")
+    assert saved["markdown"].startswith(f"Knowledge Watch, week to {facts['week']}\n\n## Headlines")
     assert "## Hyperscalers and cloud" in saved["markdown"] and "## Watch next week" not in saved["markdown"]
-    note = tmp_path / "Work" / "Industry Watch" / f"Industry Watch {facts['week']}.md"
+    note = tmp_path / "Work" / "Knowledge Watch" / f"Knowledge Watch {facts['week']}.md"
     assert note.is_file() and "Oracle opened it." in note.read_text(encoding="utf-8")
     listed = route(api, "/digests")()
     assert listed[0]["headline"] == "Oracle opens a region." and listed[0]["items"] == 1
@@ -175,10 +175,10 @@ def test_settings_need_manage_plugins_and_save_the_default_as_empty(registered):
 
 def test_running_a_pipeline_needs_it_on(registered):
     api = registered
-    assert route(api, "/pipelines/{pipeline_id}/run", "POST")("industry-scan")["started"] is False
-    api.switch_on("industry-scan")
-    assert route(api, "/pipelines/{pipeline_id}/run", "POST")("industry-scan")["started"] is True
-    assert api.jobs == [("job-industry-scan", None)]
+    assert route(api, "/pipelines/{pipeline_id}/run", "POST")("knowledge-scan")["started"] is False
+    api.switch_on("knowledge-scan")
+    assert route(api, "/pipelines/{pipeline_id}/run", "POST")("knowledge-scan")["started"] is True
+    assert api.jobs == [("job-knowledge-scan", None)]
 
 
 def test_status_and_items_routes(registered):
@@ -195,7 +195,7 @@ def test_status_and_items_routes(registered):
 
 def test_the_shipped_artifacts_agree_with_each_other():
     manifest = json.loads((REPO / "plugin.json").read_text(encoding="utf-8"))
-    assert manifest["id"] == "industry-watch" and manifest["requires"] == [] and manifest["optional"] == []
+    assert manifest["id"] == "knowledge-watch" and manifest["requires"] == [] and manifest["optional"] == []
     keys = {c["key"] for c in manifest["flavours"][0]["config"]}
     assert keys == set(settings.DEFAULTS)
     skills = {p.parent.name for p in (REPO / "artifacts" / "skills").rglob("SKILL.md")}
@@ -203,10 +203,10 @@ def test_the_shipped_artifacts_agree_with_each_other():
     for path in (REPO / "artifacts" / "agents").glob("*/Agent.json"):
         agent = json.loads(path.read_text(encoding="utf-8"))
         agents[agent["id"]] = agent
-        assert set(agent["skill_ids"]) <= skills and agent["plugins"] == ["industry-watch"]
+        assert set(agent["skill_ids"]) <= skills and agent["plugins"] == ["knowledge-watch"]
         assert (path.parent / "soul.md").is_file()
-    assert agents["industry-researcher"]["tools"] == ["web"], "the researcher has the web"
-    assert agents["industry-editor"]["tools"] == [], "the editor has no web and no shell"
+    assert agents["knowledge-researcher"]["tools"] == ["web"], "the researcher has the web"
+    assert agents["knowledge-editor"]["tools"] == [], "the editor has no web and no shell"
     for pid in pipelines.ALL:
         pipeline = json.loads((REPO / "artifacts" / "pipelines" / f"{pid}.json").read_text(encoding="utf-8"))
         assert pipeline["schedule"].startswith("CRON_TZ=Asia/Dubai ")
@@ -215,5 +215,5 @@ def test_the_shipped_artifacts_agree_with_each_other():
         if path.suffix in (".md", ".json"):
             for tool in ("scan_brief", "save_items", "digest_facts", "save_digest"):
                 text = path.read_text(encoding="utf-8")
-                if f"industry_watch_{tool}" in text:
+                if f"knowledge_watch_{tool}" in text:
                     assert tool in TOOLS

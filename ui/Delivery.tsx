@@ -92,7 +92,7 @@ export function DeliveryDrawer({ pipeline, choices, onClose, onSaved }: {
                             options={choices.accounts.map((one) => ({ value: one.id, label: one.name ?? one.id, hint: one.address }))} />
             </ChoiceField>
             <ChoiceField label="To these people" hint="Their address comes from their profile.">
-              <div className="iw-checks">
+              <div className="kw-checks">
                 {choices.people.map((one) => (
                   <Checkbox key={one.id} disabled={!one.has_email} checked={people.includes(one.id)}
                             label={one.name} hint={one.has_email ? undefined : 'no address on their profile'}
@@ -103,7 +103,7 @@ export function DeliveryDrawer({ pipeline, choices, onClose, onSaved }: {
             <Field label="And these addresses" hint="Comma-separated. Only addresses the mailbox may send to are accepted.">
               <input className="input" value={typed} onChange={(event) => setTyped(event.target.value)} />
             </Field>
-            <Field label="Subject" hint="Empty means the Pipeline's name, Industry weekly.">
+            <Field label="Subject" hint="Empty means the Pipeline's name, Knowledge weekly.">
               <input className="input" value={subject} onChange={(event) => setSubject(event.target.value)} />
             </Field>
           </>

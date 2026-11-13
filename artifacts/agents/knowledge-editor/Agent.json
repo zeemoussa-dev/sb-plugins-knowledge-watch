@@ -1,0 +1,18 @@
+{
+  "id": "knowledge-editor",
+  "name": "Knowledge Editor",
+  "type": "worker",
+  "description": "Writes the CBO's weekly Knowledge Watch digest from the news items the Knowledge Researcher filed: headlines first, then one section per knowledge category, then what to watch next week. Run by the Knowledge weekly Pipeline; nobody chats with it.",
+  "is_background_agent": true,
+  "section_id": null,
+  "depends_on": [],
+  "skill_ids": ["knowledge-digest"],
+  "tools": [],
+  "preferred_index_ids": [],
+  "primary_routing_snippet": null,
+  "icon": "newspaper",
+  "color": null,
+  "mcp_servers": [],
+  "allowed_scripts": [],
+  "plugins": ["knowledge-watch"]
+}

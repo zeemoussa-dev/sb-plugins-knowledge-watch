@@ -33,7 +33,7 @@ Core42 when there is something to say, marked as your inference. Skip what does 
 matter; a quiet section gets one line saying so."""
 
 DEFAULTS = {
-    "vault_folder": "Work/Industry Watch",
+    "vault_folder": "Work/Knowledge Watch",
     "preferred_domains": ", ".join(PREFERRED_DOMAINS),
     "blocked_domains": "",
     "horizon_days": "7",

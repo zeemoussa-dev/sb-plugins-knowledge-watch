@@ -7,7 +7,7 @@ to know about it. He adds, renames, switches off and removes both on the Interes
 The researcher scans every category that is on, topic by topic; the digest has one
 section per category that is on.
 
-Stored in `data/IndustryWatch/interests.json`. A file that was never saved means the
+Stored in `data/KnowledgeWatch/interests.json`. A file that was never saved means the
 categories this module ships.
 """
 from __future__ import annotations
@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import re
 
-STORE = "data/IndustryWatch/interests.json"
+STORE = "data/KnowledgeWatch/interests.json"
 MAX_CATEGORIES = 20
 MAX_TOPICS = 30
 

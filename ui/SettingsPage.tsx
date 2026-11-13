@@ -9,7 +9,7 @@ import {
 } from './client';
 import { DeliveryDrawer, deliverySummary } from './Delivery';
 
-export const SETTINGS_PATH = '/settings/plugins/industry-watch';
+export const SETTINGS_PATH = '/settings/plugins/knowledge-watch';
 
 type TextKey = 'vault_folder' | 'preferred_domains' | 'blocked_domains' | 'scan_prompt' | 'digest_prompt';
 type Open = { kind: 'pipeline'; id: string } | { kind: 'delivery' } | { kind: 'text'; key: TextKey }
@@ -63,7 +63,7 @@ function PipelineDrawer({ state, onClose, onSaved, onSaid }: {
 
   return (
     <EditDrawer title={name} onClose={onClose} onSave={save} saving={saving}
-                description={state.id === 'industry-scan'
+                description={state.id === 'knowledge-scan'
                   ? 'Searches the web for every category and topic on the Interests tab and files what it finds. It sends nothing.'
                   : 'Writes the weekly digest from the items filed since the last one, and sends it where you set.'}
                 secondary={(
@@ -157,7 +157,7 @@ function ScanSizeDrawer({ settings, onClose, onSaved }: {
 
 /** The plugin's settings as one sheet: when it runs, where the digest goes, and how
  *  the web is scanned. An Admin Center page: the backend refuses a change without
- *  `manage_plugins`. The CBO's own categories and topics are on the Industry Watch
+ *  `manage_plugins`. The CBO's own categories and topics are on the Knowledge Watch
  *  screen's Interests tab. */
 export function SettingsPage() {
   const [settings, setSettings] = useState<PluginSettings | null>(null);
@@ -170,7 +170,7 @@ export function SettingsPage() {
 
   const load = useCallback(() => {
     fetchSettings().then(setSettings, (error) => setFailed(`The settings could not be read: ${reason(error)}`));
-    Promise.all([fetchDeliveryChoices(), fetchPipeline('industry-weekly')]).then(([offered, found]) => {
+    Promise.all([fetchDeliveryChoices(), fetchPipeline('knowledge-weekly')]).then(([offered, found]) => {
       setChoices(offered);
       setWeekly(found);
     }, (error) => setDeliveryFailed(reason(error)));
@@ -187,7 +187,7 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Industry Watch" description="When it runs, where the weekly digest goes, and how the web is scanned." />
+      <PageHeader title="Knowledge Watch" description="When it runs, where the weekly digest goes, and how the web is scanned." />
       <div className="stack">
         {failed && <Notice tone="error">{failed}</Notice>}
         {done && <Notice tone="success" onDismiss={() => setDone('')}>{done}</Notice>}
@@ -197,14 +197,14 @@ export function SettingsPage() {
             <SettingsGroup title="When it runs"
                            description="Both arrive switched off. Scanning needs a web search provider in Admin Center.">
               {settings.pipelines.map((state) => (
-                <SettingRow key={state.id} icon={state.id === 'industry-scan' ? 'travel_explore' : 'newspaper'}
+                <SettingRow key={state.id} icon={state.id === 'knowledge-scan' ? 'travel_explore' : 'newspaper'}
                             label={state.name ?? state.id} summary={pipelineSummary(state)}
-                            hint={state.id === 'industry-scan' ? 'Files news; sends nothing.' : 'Writes and sends the digest.'}
+                            hint={state.id === 'knowledge-scan' ? 'Files news; sends nothing.' : 'Writes and sends the digest.'}
                             disabled={!state.installed} onEdit={() => setOpen({ kind: 'pipeline', id: state.id })} />
               ))}
             </SettingsGroup>
             <SettingsGroup title="Where the digest goes">
-              <SettingRow icon="send" label="Industry weekly"
+              <SettingRow icon="send" label="Knowledge weekly"
                           summary={weekly && choices ? deliverySummary(weekly, choices)
                             : (deliveryFailed ? 'Needs the Agent Ops capability' : 'Loading…')}
                           hint={deliveryFailed ? deliveryFailed : 'By chat and by email, sent by the framework.'}

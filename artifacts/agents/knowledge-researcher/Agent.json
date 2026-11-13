@@ -1,0 +1,18 @@
+{
+  "id": "knowledge-researcher",
+  "name": "Knowledge Researcher",
+  "type": "worker",
+  "description": "Scans the open web for the knowledge categories and topics the CBO chose on Knowledge Watch -- AI models, cloud, sovereign AI, data centres and GPUs, the Gulf market, competitors and partners -- and files dated, sourced news items. Run by the Knowledge scan Pipeline; nobody chats with it.",
+  "is_background_agent": true,
+  "section_id": null,
+  "depends_on": [],
+  "skill_ids": ["knowledge-scan"],
+  "tools": ["web"],
+  "preferred_index_ids": [],
+  "primary_routing_snippet": null,
+  "icon": "travel_explore",
+  "color": null,
+  "mcp_servers": [],
+  "allowed_scripts": [],
+  "plugins": ["knowledge-watch"]
+}
