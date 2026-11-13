@@ -3,9 +3,10 @@ import {
   Checkbox, ChoiceField, ChoicePicker, EditDrawer, EmptyState, Field, LoadingState, Notice, SettingRow,
   SettingsGroup, SettingsSheet, SummaryChips, Toolbar, useConfirmation,
 } from '../../pluginHost/framework';
+import { Link } from 'react-router';
 import {
-  BLANK_TOPIC, fetchInterests, fetchItems, reason, refresh, resetInterests, saveInterests, type Category, type Item,
-  type Topic,
+  BLANK_TOPIC, fetchInterests, fetchItems, fetchResearch, notePath, reason, refresh, resetInterests, saveInterests,
+  type Category, type Item, type ResearchNote, type Topic,
 } from './client';
 
 const BLANK_CATEGORY: Category = { id: '', name: '', about: '', enabled: true, topics: [] };
@@ -33,6 +34,35 @@ function TopicNews({ category, topic }: { category: string; topic: string }) {
         <div className="item-row kw-item" key={item.id}>
           <a href={item.url} target="_blank" rel="noreferrer noopener" className="kw-item-title">{item.title}</a>
           <p className="text-muted kw-item-meta">{item.source}{item.published ? `, ${item.published}` : ''}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** The research an Expert filed on this topic, each opening its note in the vault. */
+function TopicResearch({ category, topic }: { category: string; topic: string }) {
+  const [found, setFound] = useState<ResearchNote[] | null>(null);
+  const [failed, setFailed] = useState('');
+
+  useEffect(() => {
+    fetchResearch(category, topic).then(setFound, (error) => setFailed(`Its research could not be read: ${reason(error)}`));
+  }, [category, topic]);
+
+  if (failed) return <Notice tone="error">{failed}</Notice>;
+  if (!found) return <LoadingState rows={1} label="Loading its research" />;
+  if (!found.length) {
+    return <p className="text-muted">No research yet. Ask the Knowledge Expert to research it, and it is filed here.</p>;
+  }
+  return (
+    <div className="item-list">
+      {found.slice(0, 6).map((one) => (
+        <div className="item-row kw-item" key={`${one.at}-${one.title}`}>
+          <div className="kw-item-head">
+            <strong>{one.title}</strong>
+            <Link to={notePath(one.note)}>Open the note</Link>
+          </div>
+          <p className="text-muted kw-item-meta">{one.at.slice(0, 10)}{one.summary ? ` · ${one.summary}` : ''}</p>
         </div>
       ))}
     </div>
@@ -105,6 +135,8 @@ function TopicDrawer({ categories, start, startCategory, isNew, saving, mayRun, 
           <div className="stack">
             <h3 className="kw-subtitle">Its news</h3>
             <TopicNews category={startCategory} topic={start.name} />
+            <h3 className="kw-subtitle">Its research notes</h3>
+            <TopicResearch category={startCategory} topic={start.name} />
           </div>
         )}
       </div>

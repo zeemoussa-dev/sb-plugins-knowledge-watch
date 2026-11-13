@@ -88,8 +88,8 @@ def registered(api):
     return api
 
 
-def call(api, name, **args):
-    return json.loads(api.tools[name]["handler"](args, {"agent_id": "knowledge-researcher", "person_id": None}))
+def call(api, tool, **args):
+    return json.loads(api.tools[tool]["handler"](args, {"agent_id": "knowledge-researcher", "person_id": None}))
 
 
 def route(api, path: str, method: str = "GET"):

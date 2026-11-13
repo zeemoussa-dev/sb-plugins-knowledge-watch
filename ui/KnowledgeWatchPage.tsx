@@ -7,7 +7,7 @@ import {
 import { NoteText } from '../../pluginHost/noteText';
 import { useUrlState } from '../../pluginHost/state';
 import {
-  fetchDigest, fetchDigests, fetchItems, fetchStatus, reason, type Digest, type DigestEntry, type Item, type Status,
+  fetchDigest, fetchDigests, fetchItems, fetchStatus, notePath, reason, type Digest, type DigestEntry, type Item, type Status,
 } from './client';
 import { RunSettings } from './RunSettings';
 import { Topics } from './Topics';
@@ -45,12 +45,6 @@ function Overview({ status, digests, onOpenSettings }: {
       )}
     </>
   );
-}
-
-/** The vault's own note page, by the note's name. */
-function notePath(note: string): string {
-  const stem = note.split('/').pop()?.replace(/\.md$/, '') ?? note;
-  return `/browse/${encodeURIComponent(stem)}`;
 }
 
 function Digests({ rows, failed }: { rows: DigestEntry[] | null; failed: string }) {

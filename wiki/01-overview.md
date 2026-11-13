@@ -25,7 +25,8 @@ There are no daily alerts. Between digests, the **News** tab shows every item as
 | The **Knowledge Watch** screen | Four tabs: **Weekly digest**, **News**, **Topics** and **Settings** (how its runs are doing, and Refresh now). |
 | Two background agents | The **Knowledge Researcher** scans the web and files items; it cannot read the vault. The **Knowledge Editor** writes the digest from those items; it has no web access. Nobody chats with either. |
 | Two Pipelines | **Knowledge scan** runs Sunday, Tuesday and Thursday at 06:00 Dubai. **Knowledge weekly** runs Sunday at 18:00 Dubai. Both arrive switched off. See [Pipelines and delivery](wiki:pipelines-and-delivery). |
-| Two Skills | `knowledge-scan` and `knowledge-digest`. |
+| Two Experts | The **Industry Expert** and the **Knowledge Expert**, which you or your Primary ask. They answer from the filed news, research a topic into the vault, refresh the news, and keep your topics. See [The Industry and Knowledge Experts](wiki:experts). |
+| Six Skills | `knowledge-scan` and `knowledge-digest` for the Pipelines; `knowledge-answer`, `knowledge-topics`, `knowledge-research` and `knowledge-refresh` for the Experts. |
 | A Settings page | The Pipelines, where the digest goes, sources and prompts. |
 
 ## What it needs

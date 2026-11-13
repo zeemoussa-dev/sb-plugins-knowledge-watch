@@ -7,14 +7,9 @@ install's vault.
 """
 from __future__ import annotations
 
-import threading
-
 from fastapi import APIRouter, Body, HTTPException
 
-from . import digests, interests, items, pipelines, runs, settings
-
-RESEARCHER = "knowledge-researcher"
-REFRESH_TIMEOUT = 900.0
+from . import digests, interests, items, pipelines, refresh, research, runs, settings
 
 
 def _caller(api) -> dict | None:
@@ -166,39 +161,22 @@ def build_router(api) -> APIRouter:
                 "may_run": _may_run_quietly(api), "may_admin": _has(api, "manage_plugins")}
 
     @router.post("/refresh")
-    def refresh(payload: dict = Body(...)) -> dict:
+    def refresh_route(payload: dict = Body(...)) -> dict:
         """Scans one category, or one topic of it, now, outside the schedule: one turn of
         the researcher, in the background. The run is on the status as it goes."""
         _may_run(api)
-        category = str((payload or {}).get("category") or "").strip()
-        topic = str((payload or {}).get("topic") or "").strip()
-        if interests.get(api, category) is None:
-            raise HTTPException(status_code=404, detail=f"There is no category {category!r}.")
-        if topic and interests.find_topic(api, category, topic) is None:
-            raise HTTPException(status_code=404, detail=f"There is no topic {topic!r} in that category.")
-        if runs.open_run(api, "scan"):
-            raise HTTPException(status_code=409, detail="A scan is running already. Refresh again when it has finished.")
-        agents = getattr(api, "agents", None)
-        if agents is None or not hasattr(agents, "run"):
-            raise HTTPException(status_code=501, detail="This install cannot run a plugin agent: it needs a newer framework.")
         caller = _caller(api) or {}
-        run = runs.request(api, "scan", "refresh", category=category, topic=topic, by=str(caller.get("name") or ""))
-        what = f"the topic `{topic}` of the category `{category}`" if topic else f"the category `{category}`"
-        instruction = (
-            f"Follow the knowledge-scan Skill for {what} only: call `knowledge_watch_scan_brief` with category "
-            f"`{category}`" + (f" and topic `{topic}`" if topic else "") + ", scan it with `web_search` and "
-            "`read_page`, and file it with `knowledge_watch_save_items`. If you cannot search, call "
-            "`knowledge_watch_report_problem` first. Reply with one line.")
-
-        def work():
-            try:
-                reply = agents.run(RESEARCHER, instruction, timeout=REFRESH_TIMEOUT)
-                runs.finish(api, run["id"], reply)
-            except Exception as exc:  # AgentRunRefused or a runtime failure: shown on the screen
-                runs.finish(api, run["id"], "", failed=str(exc) or type(exc).__name__)
-
-        threading.Thread(target=work, name=f"knowledge-watch-refresh-{run['id']}", daemon=True).start()
+        try:
+            run = refresh.one(api, str((payload or {}).get("category") or "").strip(),
+                              str((payload or {}).get("topic") or "").strip(), by=str(caller.get("name") or ""))
+        except refresh.Refused as refused:
+            raise HTTPException(status_code=refused.status, detail=str(refused)) from refused
         return {"started": True, "run": run}
+
+    @router.get("/research")
+    def research_list(category: str = "", topic: str = "") -> list[dict]:
+        _may_read(api)
+        return research.listed(api, category=category, topic=topic)[:50]
 
     # -- the plugin-wide Settings page -------------------------------------------
 

@@ -7,6 +7,7 @@ import {
   changePipeline, reason, refresh, runPipeline, type PipelineHealth, type PipelineView, type Run, type RunState,
   type Status,
 } from './client';
+import { Experts } from './Experts';
 import { SETTINGS_PATH } from './SettingsPage';
 
 type Tone = 'success' | 'info' | 'warning' | 'danger' | 'neutral';
@@ -171,6 +172,7 @@ export function RunSettings({ status, failed, onChanged }: {
                         onChanged={(text) => { setSaid(text); onChanged(text); }} />
         ))}
       </div>
+      <Experts />
       <Card title="Each category" description="When it was last scanned and what it filed. Refresh scans one category now.">
         <DataTable label="Each category's last scan" columns={columns} rows={status.last_scans}
                    rowKey={(row) => row.category_id} />

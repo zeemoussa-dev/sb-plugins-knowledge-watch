@@ -1,0 +1,32 @@
+{
+  "id": "knowledge-expert",
+  "name": "Knowledge Expert",
+  "type": "expert",
+  "is_background_agent": false,
+  "description": "The CBO's technologies and topics: AI models, sovereign AI, GPUs and data-centre technology, cloud platforms and the topics he follows on Knowledge Watch. Explains a technology, says what changed in it lately from the filed news, and adds or tunes the topics he follows.",
+  "depends_on": [
+    "default"
+  ],
+  "skill_ids": [
+    "knowledge-answer",
+    "knowledge-topics",
+    "knowledge-research",
+    "knowledge-refresh"
+  ],
+  "tools": [
+    "web"
+  ],
+  "preferred_index_ids": [],
+  "primary_routing_snippet": "- **`knowledge-expert`** -- a technology or topic to understand: what it is, how it works, where it stands and what changed lately (models, GPUs, sovereign AI, cloud technology), and the topics followed on Knowledge Watch -- add one, tune its search, or ask what it found. Relay the question as asked.",
+  "icon": "school",
+  "color": "#7c3aed",
+  "mcp_servers": [],
+  "allowed_scripts": [],
+  "plugins": [
+    "knowledge-watch"
+  ],
+  "limits": {
+    "model_calls": 40,
+    "tool_calls": 40
+  }
+}

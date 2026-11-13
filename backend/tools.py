@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 
-from . import digests, interests, items, runs, settings
+from . import digests, interests, items, refresh, research, runs, settings
 
 
 def _answer(value) -> str:
@@ -115,6 +115,121 @@ def register(api) -> None:
         return _answer({"items": found, "categories": [{"id": c["id"], "name": c["name"]}
                                                        for c in interests.read(api)]})
 
+    def digest(args, context=None):
+        week = str((args or {}).get("week") or "").strip()
+        rows = digests.listed(api)
+        chosen = next((d for d in rows if d.get("week") == week), None) if week else (rows[0] if rows else None)
+        found = digests.read(api, chosen["id"]) if chosen else None
+        return _answer({"digest": {k: found.get(k) for k in ("week", "at", "items", "markdown", "note")} if found else None,
+                        "weeks": [d.get("week") for d in rows]})
+
+    def topics(args, context=None):
+        return _answer({"categories": [{**c, "last_scan": (items.last_scan(api, c["id"]) or {}).get("at")}
+                                       for c in interests.read(api)]})
+
+    def add_topic(args, context=None):
+        args = args or {}
+        category_id = str(args.get("category") or "").strip()
+        name = " ".join(str(args.get("name") or "").split())
+        categories = interests.read(api)
+        category = next((c for c in categories if c["id"] == category_id), None)
+        if category is None:
+            raise ValueError(f"{category_id!r} is not a category; `topics` lists them")
+        if not name:
+            raise ValueError("name the topic in `name`")
+        topic = {"name": name, "notes": args.get("notes") or "", "search_terms": args.get("search_terms") or [],
+                 "sources": args.get("sources") or [], "leave_out": args.get("leave_out") or ""}
+        existing = next((t for t in category["topics"] if t["name"].lower() == name.lower()), None)
+        if existing:
+            existing.update({k: v for k, v in topic.items() if v and k != "name"})
+        else:
+            category["topics"].append(topic)
+        saved = interests.save(api, categories)
+        kept = next(c for c in saved if c["id"] == category_id)
+        return _answer({"saved": True, "updated": bool(existing), "category": kept["name"],
+                        "topic": next(t for t in kept["topics"] if t["name"].lower() == name.lower())})
+
+    def remove_topic(args, context=None):
+        args = args or {}
+        category_id = str(args.get("category") or "").strip()
+        name = str(args.get("name") or "").strip().lower()
+        categories = interests.read(api)
+        category = next((c for c in categories if c["id"] == category_id), None)
+        if category is None or not any(t["name"].lower() == name for t in category["topics"]):
+            raise ValueError("no such topic; `topics` lists them")
+        category["topics"] = [t for t in category["topics"] if t["name"].lower() != name]
+        interests.save(api, categories)
+        return _answer({"removed": True, "category": category["name"]})
+
+    def save_research(args, context=None):
+        args = args or {}
+        return _answer(research.save(api, args.get("category"), args.get("topic"), args.get("title") or "",
+                                     args.get("markdown"), args.get("sources") or [],
+                                     by=str((context or {}).get("agent_id") or "") if isinstance(context, dict) else ""))
+
+    def research_notes(args, context=None):
+        args = args or {}
+        return _answer({"notes": research.listed(api, category=str(args.get("category") or ""),
+                                                 topic=str(args.get("topic") or ""))[:30]})
+
+    def refresh_now(args, context=None):
+        args = args or {}
+        category = str(args.get("category") or "").strip()
+        try:
+            run = (refresh.one(api, category, str(args.get("topic") or "").strip(), by="an Expert") if category
+                   else refresh.everything(api, by="an Expert"))
+        except refresh.Refused as refused:
+            return _answer({"started": False, "why": str(refused)})
+        return _answer({"started": True, "run": run["id"],
+                        "note": "The scan runs in the background; its items appear on Knowledge Watch when it is done."})
+
+    api.register_agent_tool(
+        "remove_topic", handler=remove_topic,
+        description="Stops following a topic the CBO asked to drop: `category` (an id) and `name`. Only when he asked.",
+        parameters={"type": "object", "properties": {"category": {"type": "string"}, "name": {"type": "string"}},
+                    "required": ["category", "name"]})
+    api.register_agent_tool(
+        "save_research", handler=save_research,
+        description=("Files research on one topic in its place in the vault: `<vault folder>/<category>/<topic> - "
+                     "research`, newest at the top under today's date. `category` (an id), `topic` (as `topics` "
+                     "names it; add it first if he does not follow it yet), `title`, `markdown` (the research) "
+                     "and `sources` ({url, title, date}). Research without a source is refused."),
+        parameters={"type": "object", "properties": {
+            "category": {"type": "string"}, "topic": {"type": "string"}, "title": {"type": "string"},
+            "markdown": {"type": "string"},
+            "sources": {"type": "array", "items": {"type": "object", "properties": {
+                "url": {"type": "string"}, "title": {"type": "string"}, "date": {"type": "string"}},
+                "required": ["url"]}}},
+            "required": ["category", "topic", "markdown", "sources"]})
+    api.register_agent_tool(
+        "research_notes", handler=research_notes,
+        description="The research notes filed on the CBO's topics, newest first; `category` and `topic` narrow it.",
+        parameters={"type": "object", "properties": {"category": {"type": "string"}, "topic": {"type": "string"}}})
+    api.register_agent_tool(
+        "refresh_now", handler=refresh_now,
+        description=("Refreshes the knowledge data now, outside the schedule: with `category` (and optionally "
+                     "`topic`) the Knowledge Researcher scans just that, in the background; with neither, the whole "
+                     "Knowledge scan runs (only while it is switched on). Answers whether it started, and why not."),
+        parameters={"type": "object", "properties": {"category": {"type": "string"}, "topic": {"type": "string"}}})
+    api.register_agent_tool(
+        "digest", handler=digest,
+        description=("The weekly Knowledge Watch digest the CBO received: the newest, or the one for `week` "
+                     "(its date, YYYY-MM-DD, as `weeks` lists them)."),
+        parameters={"type": "object", "properties": {"week": {"type": "string"}}})
+    api.register_agent_tool(
+        "topics", handler=topics, parameters={"type": "object", "properties": {}},
+        description=("The knowledge categories and topics the CBO follows, each topic with his note, its search "
+                     "terms, sources and what to leave out, and when each category was last scanned."))
+    api.register_agent_tool(
+        "add_topic", handler=add_topic,
+        description=("Adds a topic the CBO asked to follow to one of his categories, or tunes one he already "
+                     "follows: `category` (an id from `topics`), `name`, and optionally `notes` (what he wants "
+                     "to know), `search_terms`, `sources` (domains) and `leave_out`. Only when he asked for it."),
+        parameters={"type": "object", "properties": {
+            "category": {"type": "string"}, "name": {"type": "string"}, "notes": {"type": "string"},
+            "search_terms": {"type": "array", "items": {"type": "string"}},
+            "sources": {"type": "array", "items": {"type": "string"}}, "leave_out": {"type": "string"}},
+            "required": ["category", "name"]})
     api.register_agent_tool(
         "scan_brief", handler=brief,
         description=("What to scan the web for now: each knowledge category that is on, with the topics the CBO "

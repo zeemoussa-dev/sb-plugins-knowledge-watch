@@ -164,6 +164,59 @@ export function fetchStatus(): Promise<Status> {
   return apiFetch(`${BASE}/status`);
 }
 
+// -- research notes ------------------------------------------------------------------
+
+export interface ResearchNote {
+  category: string;
+  topic: string;
+  title: string;
+  at: string;
+  note: string;
+  by: string;
+  summary: string;
+}
+
+export function fetchResearch(category: string, topic: string): Promise<ResearchNote[]> {
+  const query = new URLSearchParams({ category, topic });
+  return apiFetch(`${BASE}/research?${query.toString()}`);
+}
+
+/** The vault's own note page, by the note's path or name. */
+export function notePath(note: string): string {
+  const stem = note.split('/').pop()?.replace(/\.md$/, '') ?? note;
+  return `/browse/${encodeURIComponent(stem)}`;
+}
+
+// -- the Experts, and who may ask them (the app's own agents API) ---------------------
+
+export const EXPERTS = [
+  { id: 'industry-expert', name: 'Industry Expert', about: 'The industry and the market: competitors, partners, hyperscalers, model providers, deals and the Gulf market.' },
+  { id: 'knowledge-expert', name: 'Knowledge Expert', about: 'Technologies and topics: what they are, where they stand, research filed in the vault, and your topics.' },
+] as const;
+
+/** The install's own Primary: whoever has no Primary of their own talks to it. */
+export const INSTALL_PRIMARY = 'default';
+
+export interface AgentDetail {
+  id: string;
+  name: string;
+  depends_on: string[];
+}
+
+export function fetchAgent(id: string): Promise<AgentDetail> {
+  return apiFetch(`/agents/${encodeURIComponent(id)}`);
+}
+
+/** Who may ask an agent is its `depends_on`. Changing it needs `manage_agents`. */
+export function saveAskers(id: string, dependsOn: string[]): Promise<unknown> {
+  return send(`/agents/${encodeURIComponent(id)}`, 'PATCH', { depends_on: dependsOn });
+}
+
+/** The agent the signed-in person talks to; none means the install's Primary. */
+export function fetchMyPrimary(): Promise<{ agent_id: string | null; own: boolean }> {
+  return apiFetch('/me/primary');
+}
+
 // -- the plugin's Settings page ---------------------------------------------------
 
 export interface PluginSettings {

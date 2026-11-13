@@ -2,6 +2,29 @@
 
 All notable changes to the Knowledge Watch plugin.
 
+## [1.3.0] - 2026-11-13
+
+The operator: "Add a Knowledge and Industry agent and allow a command in Settings to link them to the Primary (default and the user's current Primary)", then "give those agents skills like creating topics, or running research on a kind of thing and storing it in its place in the vault, and refreshing the knowledge data".
+
+- feat: **two Experts**, `industry-expert` (the market, competitors, partners, deals, the Gulf) and `knowledge-expert` (technologies and topics). Each:
+  - is a chat Expert with web access and its own budget (40 tool calls);
+  - carries a Primary routing line;
+  - arrives linked to the install's Primary (`depends_on: ["default"]`).
+
+  Two are enough. Each answers its own kind of question, and both carry the same four Skills.
+- feat: **four Expert Skills**:
+  - `knowledge-answer`: from the filed news and digests, then the web;
+  - `knowledge-topics`: add, tune and drop a topic, only when asked;
+  - `knowledge-research`: deep web research filed in the vault in its place, `<vault folder>/<category>/<topic> - research`, newest on top;
+  - `knowledge-refresh`: one topic, one category, or everything, in the background.
+- feat: **agent tools** for them: `knowledge_watch_digest`, `_topics`, `_add_topic`, `_remove_topic`, `_save_research`, `_research_notes` and `_refresh_now`.
+- feat: **research notes**. A topic's drawer lists its research notes, each with **Open the note**. The plugin keeps each topic's research text in `data/KnowledgeWatch/research.json` too, so a second piece of research never depends on the vault index having seen the first.
+- feat: **the Agents card** on the Settings tab. It shows both Experts and who may ask them, with **Link to the install's Primary** and **Link to my Primary**. The card adds the Primary to each Expert's `depends_on` through the app's own `PATCH /agents/{id}`, with the signed-in person's rights.
+- refactor: starting a refresh moved into `backend/refresh.py`, shared by the screen and the Experts.
+- fix: tuning a topic under another spelling of its name no longer renames it.
+- docs: a Guide page on the Experts, and troubleshooting for withheld web results and an unlinked Primary.
+- tests: 35.
+
 ## [1.2.0] - 2026-11-13
 
 The first two real scans on the install filed nothing, and the run log is why this was quick to find.

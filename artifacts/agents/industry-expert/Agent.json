@@ -1,0 +1,32 @@
+{
+  "id": "industry-expert",
+  "name": "Industry Expert",
+  "type": "expert",
+  "is_background_agent": false,
+  "description": "The CBO's industry: hyperscalers and cloud, model providers, data centres and GPUs, the Gulf and UAE market, and the competitors and partners that matter to Core42. Answers from the news Knowledge Watch filed and its weekly digests, and looks up what is newer on the web.",
+  "depends_on": [
+    "default"
+  ],
+  "skill_ids": [
+    "knowledge-answer",
+    "knowledge-topics",
+    "knowledge-research",
+    "knowledge-refresh"
+  ],
+  "tools": [
+    "web"
+  ],
+  "preferred_index_ids": [],
+  "primary_routing_snippet": "- **`industry-expert`** -- the industry and the market: what a competitor, partner, hyperscaler or model provider did, deals, capacity, pricing, the Gulf and UAE market, and what this week's Knowledge Watch digest said. Relay the question as asked.",
+  "icon": "monitoring",
+  "color": "#0f766e",
+  "mcp_servers": [],
+  "allowed_scripts": [],
+  "plugins": [
+    "knowledge-watch"
+  ],
+  "limits": {
+    "model_calls": 40,
+    "tool_calls": 40
+  }
+}

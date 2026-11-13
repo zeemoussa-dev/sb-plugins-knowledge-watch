@@ -18,13 +18,13 @@ Everything it needs from the framework arrives through the Plugin API handed to
 """
 from __future__ import annotations
 
-from . import digests, interests, items, runs, tools
+from . import digests, interests, items, research, runs, tools
 from .routes import build_router
 
 
 def register(api) -> None:
     # A data file this plugin has not registered cannot be read or written.
-    for path in (interests.STORE, items.STORE, digests.STORE, runs.STORE):
+    for path in (interests.STORE, items.STORE, digests.STORE, runs.STORE, research.STORE):
         api.register_seed_data_file(path)
     api.register_router(build_router(api))
     tools.register(api)

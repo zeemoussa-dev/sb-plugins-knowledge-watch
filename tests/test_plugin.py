@@ -9,11 +9,12 @@ from pathlib import Path
 import pytest
 from fastapi import HTTPException
 
-from backend import digests, interests, items, pipelines, runs, settings
+from backend import digests, interests, items, pipelines, research, runs, settings
 from tests.conftest import call, route
 
 REPO = Path(__file__).resolve().parent.parent
-TOOLS = {"scan_brief", "save_items", "digest_facts", "save_digest", "recent_items", "report_problem"}
+TOOLS = {"scan_brief", "save_items", "digest_facts", "save_digest", "recent_items", "report_problem",
+         "digest", "topics", "add_topic", "remove_topic", "save_research", "research_notes", "refresh_now"}
 
 
 def story(n: int, **extra) -> dict:
@@ -27,7 +28,7 @@ def story(n: int, **extra) -> dict:
 def test_register_wires_everything_through_the_plugin_api(registered):
     assert set(registered.tools) == TOOLS
     assert len(registered.routers) == 1
-    assert {interests.STORE, items.STORE, digests.STORE, runs.STORE} <= set(registered.registered)
+    assert {interests.STORE, items.STORE, digests.STORE, runs.STORE, research.STORE} <= set(registered.registered)
 
 
 # -- the interests ------------------------------------------------------------
@@ -207,6 +208,10 @@ def test_the_shipped_artifacts_agree_with_each_other():
         assert (path.parent / "soul.md").is_file()
     assert agents["knowledge-researcher"]["tools"] == ["web"], "the researcher has the web"
     assert agents["knowledge-editor"]["tools"] == [], "the editor has no web and no shell"
+    for expert in ("industry-expert", "knowledge-expert"):
+        assert agents[expert]["type"] == "expert" and not agents[expert]["is_background_agent"]
+        assert "default" in agents[expert]["depends_on"], "the install's Primary may ask it"
+        assert agents[expert]["primary_routing_snippet"]
     for pid in pipelines.ALL:
         pipeline = json.loads((REPO / "artifacts" / "pipelines" / f"{pid}.json").read_text(encoding="utf-8"))
         assert pipeline["schedule"].startswith("CRON_TZ=Asia/Dubai ")

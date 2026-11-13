@@ -28,10 +28,14 @@ const ui: PluginUi = {
         + 'search terms, sources to look at first and what to leave out, see its news, and **Refresh this topic now**.\n\n'
         + '**Settings** shows each job: on, off, running, failed or stopped, and why when it does not work. '
         + '**Refresh now** scans everything now, **Write the digest now** writes the digest, and each category '
-        + 'can be refreshed on its own. See the Knowledge Watch Guide in the Wiki for more.',
+        + 'can be refreshed on its own. Its **Agents** card links the Industry Expert and the Knowledge Expert '
+        + 'to the install\'s Primary or to yours.\n\n'
+        + 'Ask the **Industry Expert** about the market and the **Knowledge Expert** about a technology. Either '
+        + 'one adds or tunes a topic, researches a topic into the vault, or refreshes the news when you ask. '
+        + 'See the Knowledge Watch Guide in the Wiki for more.',
       keywords: ['industry', 'news', 'digest', 'weekly', 'ai', 'cloud', 'sovereign', 'gpu', 'data centre',
         'gulf', 'competitors', 'partners', 'topics', 'categories', 'interests', 'refresh', 'running', 'failed',
-        'search terms', 'notes'],
+        'search terms', 'notes', 'expert', 'industry expert', 'knowledge expert', 'primary', 'research'],
       href: '/knowledge-watch',
     },
     {
