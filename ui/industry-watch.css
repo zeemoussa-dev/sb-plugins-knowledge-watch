@@ -1,0 +1,68 @@
+/* Only what the framework's components do not already lay out. Colours, radii and
+   type come from the framework's tokens; nothing here restyles a component. */
+
+.iw-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+}
+
+.iw-item-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.iw-item-title {
+  font-weight: 600;
+}
+
+.iw-item-meta,
+.iw-item-text {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  max-width: 110ch;
+}
+
+.iw-tags,
+.iw-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.iw-checks {
+  flex-direction: column;
+}
+
+.iw-topics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.iw-topics-title {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+.iw-topic {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .iw-topic {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .iw-topic > :nth-child(2) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

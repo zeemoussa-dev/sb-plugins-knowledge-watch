@@ -1,0 +1,198 @@
+import { apiFetch, ApiError } from '../../pluginHost/api';
+
+const BASE = '/plugins/industry-watch';
+
+function send<T>(path: string, method: string, body?: unknown): Promise<T> {
+  return apiFetch<T>(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+}
+
+/** What the backend refused, in its own words. */
+export function reason(error: unknown): string {
+  if (error instanceof ApiError) {
+    try {
+      return JSON.parse(error.message).detail ?? error.message;
+    } catch {
+      return error.message;
+    }
+  }
+  return String(error);
+}
+
+// -- the CBO's interests ------------------------------------------------------------
+
+export interface Topic {
+  name: string;
+  notes: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  about: string;
+  enabled: boolean;
+  topics: Topic[];
+}
+
+export function fetchInterests(): Promise<{ categories: Category[]; limits: { categories: number; topics: number } }> {
+  return apiFetch(`${BASE}/interests`);
+}
+
+export function saveInterests(categories: Category[]): Promise<{ categories: Category[] }> {
+  return send(`${BASE}/interests`, 'PUT', { categories });
+}
+
+export function resetInterests(): Promise<{ categories: Category[] }> {
+  return send(`${BASE}/interests/reset`, 'POST');
+}
+
+// -- the news and the digests -------------------------------------------------------
+
+export interface Item {
+  id: string;
+  url: string;
+  title: string;
+  source: string;
+  published: string;
+  category: string;
+  category_name: string;
+  topic: string;
+  summary: string;
+  why_it_matters: string;
+  importance: 'high' | 'medium' | 'low';
+  companies: string[];
+  found_at: string;
+}
+
+export function fetchItems(category: string, days: number, q: string): Promise<{
+  items: Item[]; categories: { id: string; name: string }[];
+}> {
+  const query = new URLSearchParams({ category, days: String(days), q });
+  return apiFetch(`${BASE}/items?${query.toString()}`);
+}
+
+export interface DigestEntry {
+  id: string;
+  at: string;
+  week: string;
+  headline: string;
+  items: number;
+  note: string;
+}
+
+export interface Digest extends DigestEntry {
+  sections: Record<string, string>;
+  markdown: string;
+  sources: string[];
+}
+
+export function fetchDigests(): Promise<DigestEntry[]> {
+  return apiFetch(`${BASE}/digests`);
+}
+
+export function fetchDigest(id: string): Promise<Digest> {
+  return apiFetch(`${BASE}/digests/${encodeURIComponent(id)}`);
+}
+
+export interface PipelineState {
+  id: string;
+  installed: boolean;
+  name?: string;
+  cron_job_id?: string | null;
+  cron_enabled?: boolean | null;
+  schedule?: string | null;
+  last_run?: string | null;
+  next_run?: string | null;
+  last_status?: string | null;
+}
+
+export interface Status {
+  categories: number;
+  topics: number;
+  items_week: number;
+  last_scans: { category: string; at?: string; saved?: number }[];
+  pipelines: PipelineState[];
+}
+
+export function fetchStatus(): Promise<Status> {
+  return apiFetch(`${BASE}/status`);
+}
+
+// -- the plugin's Settings page ---------------------------------------------------
+
+export interface PluginSettings {
+  values: Record<string, string>;
+  defaults: Record<string, string>;
+  pipelines: PipelineState[];
+}
+
+export function fetchSettings(): Promise<PluginSettings> {
+  return apiFetch(`${BASE}/settings`);
+}
+
+export function saveSettings(values: Record<string, string>): Promise<{
+  values: Record<string, string>; refused: Record<string, string>;
+}> {
+  return send(`${BASE}/settings`, 'PUT', values);
+}
+
+export function changePipeline(id: string, change: { enabled?: boolean; schedule?: string }): Promise<PipelineState> {
+  return send(`${BASE}/pipelines/${encodeURIComponent(id)}`, 'PUT', change);
+}
+
+export function runPipeline(id: string): Promise<{ started: boolean; note: string }> {
+  return send(`${BASE}/pipelines/${encodeURIComponent(id)}/run`, 'POST');
+}
+
+// -- the framework's own Pipelines API: where the digest goes ------------------------
+
+export interface DeliveryChoices {
+  people: { id: string; name: string; channels: string[]; has_email: boolean }[];
+  channel_labels: Record<string, string>;
+  accounts: { id: string; name?: string; address?: string; label?: string }[];
+}
+
+export interface PipelineEmail {
+  account_id: string;
+  to: string[];
+  people: string[];
+  subject: string;
+  set_by?: string;
+}
+
+export interface PipelineDetail {
+  id: string;
+  name: string;
+  description: string;
+  section_id: string;
+  steps: { id: string; name: string; description?: string; type: string; agent_id: string; instruction: string }[];
+  cron_enabled: boolean | null;
+  cron_schedule: string | null;
+  deliver: string;
+  email: PipelineEmail | null;
+}
+
+export function fetchDeliveryChoices(): Promise<DeliveryChoices> {
+  return apiFetch('/pipelines/delivery-choices');
+}
+
+export function fetchPipeline(id: string): Promise<PipelineDetail> {
+  return apiFetch(`/pipelines/${encodeURIComponent(id)}`);
+}
+
+/** Saves where the result goes, keeping everything else as it is: `PUT
+ *  /pipelines/{id}` takes the whole Pipeline, so its steps, schedule and on/off are
+ *  sent back unchanged. */
+export function saveDelivery(pipeline: PipelineDetail, deliver: string, email: PipelineEmail | null): Promise<PipelineDetail> {
+  return send(`/pipelines/${encodeURIComponent(pipeline.id)}`, 'PUT', {
+    name: pipeline.name,
+    description: pipeline.description,
+    section_id: pipeline.section_id || null,
+    steps: pipeline.steps.map((step) => ({
+      id: step.id, name: step.name, agent_id: step.agent_id, instruction: step.instruction, type: step.type,
+    })),
+    schedule: pipeline.cron_schedule ?? '',
+    scheduled: Boolean(pipeline.cron_enabled),
+    deliver,
+    email: email ? { account_id: email.account_id, to: email.to, people: email.people, subject: email.subject } : null,
+  });
+}

@@ -1,0 +1,29 @@
+# CHANGELOG
+
+All notable changes to the Industry Watch plugin.
+
+## [1.0.0] - 2026-11-13
+
+First release, built to the scope the operator approved on 2026-11-13: a weekly digest only, on Sunday at 18:00 Dubai, one weekly note in the vault, and no link to the other plugins.
+
+- feat: **the CBO's interests.** Knowledge categories, each with the topics he is interested in and a note per topic on what he wants to know. He adds, edits, switches off and deletes them on the **Interests** tab. Six ship:
+  - AI models and providers;
+  - hyperscalers and cloud;
+  - sovereign AI and policy;
+  - data centres, GPUs and power;
+  - the Gulf and UAE technology market;
+  - competitors and partners.
+- feat: **Industry scan** (`CRON_TZ=Asia/Dubai 0 6 * * 0,2,4`). The Industry Researcher (web, no vault) searches every topic and files dated, sourced items with a summary, why each matters to Core42 (marked as inference), its importance and the organisations it names.
+  - Items are kept once per link, with tracking parameters ignored.
+  - Blocked sources are refused, and each scan files at most a set number of items per category.
+- feat: **Industry weekly** (`CRON_TZ=Asia/Dubai 0 18 * * 0`). The Industry Editor (no web) writes the digest: headlines, one section per category, then what to watch next week.
+  - It is filed on the screen and as a vault note in `Work/Industry Watch/`.
+  - It is sent by the framework's Pipeline delivery.
+- feat: **the Industry Watch screen.** Headline figures, then three tabs: **Weekly digest**, **News** (filter by category, period and words) and **Interests**.
+- feat: **the Settings page**, a settings sheet:
+  - when each Pipeline runs, with Run now;
+  - where the digest goes (chat and email);
+  - preferred and blocked sources, and how much a scan files;
+  - the scan and digest prompts, and the vault folder.
+- docs: the Guide (5 pages) and 2 help entries.
+- tests: 17. `check_plugin.py` is ok.

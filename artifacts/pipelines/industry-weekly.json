@@ -1,0 +1,18 @@
+{
+  "id": "industry-weekly",
+  "name": "Industry weekly",
+  "description": "Every Sunday at 18:00 Dubai the Industry Editor writes the CBO's weekly Industry Watch digest from the items filed since the last one: headlines, one section per knowledge category, and what to watch next week. It is filed on the Industry Watch screen and as a note in the vault. The digest is the run's result: set who receives it, by chat and by mail, on the plugin's Settings page.",
+  "section": "Core42",
+  "schedule": "CRON_TZ=Asia/Dubai 0 18 * * 0",
+  "steps": [
+    {
+      "id": "digest",
+      "name": "Write the week's digest",
+      "description": "The Industry Editor writes the digest from what the plugin gathers and files it through the plugin.",
+      "depends_on": [],
+      "type": "producer",
+      "agent_id": "industry-editor",
+      "instruction": "Follow the industry-digest Skill: call `industry_watch_digest_facts`, write each section it lists, and file the digest with `industry_watch_save_digest`. Write nothing any other way and send nothing yourself. Your last reply is delivered as the digest: reply with exactly the markdown the save answered, and nothing else."
+    }
+  ]
+}
