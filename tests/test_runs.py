@@ -167,3 +167,31 @@ def test_items_filter_by_topic(registered):
         {"url": "https://a.example/1", "title": "A", "summary": "s", "topic": "AWS"},
         {"url": "https://a.example/2", "title": "B", "summary": "s", "topic": "Oracle OCI"}])
     assert [i["title"] for i in route(api, "/items")(category="cloud", topic="aws", days=30, q="")["items"]] == ["A"]
+
+
+def test_the_pipeline_scans_one_category_per_step_and_later_steps_have_nothing(registered):
+    api = registered
+    seen = []
+    for _ in range(12):
+        brief = call(api, "scan_brief", next=True)
+        if not brief["categories"]:
+            continue
+        category = brief["categories"][0]["category"]
+        assert len(brief["categories"]) == 1 and category not in seen
+        seen.append(category)
+        call(api, "save_items", category=category, items=[])
+    assert len(seen) == 6
+    run = runs.listed(api)[0]
+    assert run["state"] == "done" and len(run["expected"]) == 6
+    assert len([r for r in runs.listed(api) if r["kind"] == "scan"]) == 1, "no second run from the spare steps"
+
+
+def test_a_step_that_never_files_leaves_the_run_failed_with_which(registered):
+    api = registered
+    first = call(api, "scan_brief", next=True)["categories"][0]["category"]
+    for _ in range(6):
+        brief = call(api, "scan_brief", next=True)
+        if brief["categories"]:
+            call(api, "save_items", category=brief["categories"][0]["category"], items=[])
+    run = runs.listed(api)[0]
+    assert run["state"] == "failed" and first in run["problem"]

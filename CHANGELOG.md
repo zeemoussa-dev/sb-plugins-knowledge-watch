@@ -2,6 +2,22 @@
 
 All notable changes to the Knowledge Watch plugin.
 
+## [1.2.0] - 2026-11-13
+
+The first two real scans on the install filed nothing, and the run log is why this was quick to find.
+
+1. The first scan was refused by the install's injection guard, which withheld the web results as "an attempt to instruct you". The operator granted the two Knowledge agents an exception.
+2. The second scan stopped at the engine's turn budget: "this turn reached its limit of 12 tool calls". A whole scan of 47 topics is more than a hundred searches and reads.
+
+- fix: **one category per step, each in its own turn.** Knowledge scan now has 12 steps. Each step calls `knowledge_watch_scan_brief` with `next` true, scans the one category it is handed, and files it.
+  - A step with no category left replies NOTHING DUE at once, so up to 12 categories are scanned per run.
+  - The run ends when every category is handed out. It is marked failed, naming the categories that were never filed, if a step ran out or failed.
+  - The spare steps after the last category start no second run.
+- fix: **the Knowledge Researcher's own budget**, `limits` in its Agent.json: 60 tool calls and 70 model calls a turn. One category of up to 15 topics fits in it.
+- change: the scan Skill (1.2.0) says how to work in one-category steps and to file what it has before its budget runs out.
+- change: the Settings tab's progress counts every category the run is to scan (`expected`), not only those handed out so far.
+- tests: 31.
+
 ## [1.1.0] - 2026-11-13
 
 The operator: "We need Settings so I can see the Pipeline, start a refresh now, create a topic, view the notes, fine-tune my search on a topic, check if the job is running or stopped when it doesn't work."

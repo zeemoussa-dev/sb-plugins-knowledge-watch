@@ -50,7 +50,7 @@ function PipelineCard({ view, mayRun, mayAdmin, onChanged }: {
   const health = HEALTH[view.state];
   const name = view.name ?? view.id;
   const run = view.run;
-  const expected = run?.categories.length ?? 0;
+  const expected = run?.expected?.length || run?.categories.length || 0;
   const filedCount = run ? Object.keys(run.filed).length : 0;
 
   function start() {

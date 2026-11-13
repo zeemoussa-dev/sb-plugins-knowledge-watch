@@ -42,9 +42,22 @@ def scan_prompt(api, category: dict, since: str) -> str:
         return template + "\n\n" + "\n".join(f"{k}: {v}" for k, v in values.items())
 
 
-def scan_brief(api, category_id: str = "", topic_name: str = "") -> dict:
+def scan_brief(api, category_id: str = "", topic_name: str = "", *, next_one: bool = False) -> dict:
+    """What to scan. `next_one` hands out one category at a time, the next one this run
+    has not scanned yet: a Pipeline step scans one category in its own turn, because a
+    whole scan is far more searches than one turn's budget."""
     chosen = interests.enabled(api)
-    if category_id:
+    expected = [c["id"] for c in chosen]
+    if next_one:
+        open_run = runs.open_run(api, "scan")
+        if open_run is None and runs.just_finished(api):
+            return {"categories": [], "note": "Every category has been scanned in this run."}
+        handed = set((open_run or {}).get("categories") or [])
+        chosen = [c for c in chosen if c["id"] not in handed][:1]
+        if not chosen:
+            runs.close_scan(api)
+            return {"categories": [], "note": "Every category has been scanned in this run."}
+    elif category_id:
         chosen = [c for c in interests.read(api) if c["id"] == category_id and c["topics"]]
         if not chosen:
             raise ValueError(f"{category_id!r} is not a category with topics")
@@ -53,7 +66,8 @@ def scan_brief(api, category_id: str = "", topic_name: str = "") -> dict:
         chosen = [c for c in found if c["topics"]]
         if not chosen:
             raise ValueError(f"{topic_name!r} is not a topic of {category_id or 'any category'}")
-    runs.begin(api, "scan", [c["id"] for c in chosen])
+    runs.begin(api, "scan", [c["id"] for c in chosen],
+               expected=expected if next_one or not (category_id or topic_name) else [c["id"] for c in chosen])
     jobs = []
     for category in chosen:
         since = items.since(api, category["id"])
@@ -69,7 +83,8 @@ def scan_brief(api, category_id: str = "", topic_name: str = "") -> dict:
 def register(api) -> None:
     def brief(args, context=None):
         args = args or {}
-        return _answer(scan_brief(api, str(args.get("category") or "").strip(), str(args.get("topic") or "").strip()))
+        return _answer(scan_brief(api, str(args.get("category") or "").strip(), str(args.get("topic") or "").strip(),
+                                  next_one=bool(args.get("next"))))
 
     def report_problem(args, context=None):
         args = args or {}
@@ -106,9 +121,11 @@ def register(api) -> None:
                      "is interested in (each with his note, his own search terms, the sources to look at first and "
                      "what to leave out), the date to look back to, the prompt to scan it with, and what that "
                      "category already holds so nothing is filed twice. Also the preferred and blocked sources "
-                     "and the most items to file per category. `category` narrows it to one category, and "
-                     "`topic` to one topic of it."),
-        parameters={"type": "object", "properties": {"category": {"type": "string"}, "topic": {"type": "string"}}})
+                     "and the most items to file per category. `next` true hands out the next category this "
+                     "run has not scanned yet, one at a time, and none when every one is done. `category` "
+                     "narrows it to one category, and `topic` to one topic of it."),
+        parameters={"type": "object", "properties": {"next": {"type": "boolean"}, "category": {"type": "string"},
+                                                     "topic": {"type": "string"}}})
     api.register_agent_tool(
         "report_problem", handler=report_problem,
         description=("Records why a scan or a digest could not go on -- web search failing or missing, a tool "

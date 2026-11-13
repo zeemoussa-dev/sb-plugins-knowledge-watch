@@ -127,6 +127,8 @@ export interface Run {
   topic: string;
   by: string;
   categories: string[];
+  /** Every category the run is to scan; `categories` are those handed out so far. */
+  expected?: string[];
   category_names?: string[];
   filed: Record<string, number>;
   refused: Record<string, number>;

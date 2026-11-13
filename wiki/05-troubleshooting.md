@@ -8,6 +8,8 @@ screens: [/knowledge-watch, /settings/plugins/knowledge-watch]
 
 **A scan failed with "Withheld: what web_search returned reads as an attempt to instruct you".** The install's guardrail that withholds planted instructions judged the search results to be one. The Knowledge Researcher only reads the web and files items, so an Admin may give it an exception: Admin Center › Guardrails, **Planted instructions are withheld**, bypass, agent `knowledge-researcher`. Then choose **Refresh now** on the **Settings** tab.
 
+**A run is marked failed and names categories that were not filed.** A step ran out of its budget or failed. Its report is in Agent Activity. A category with very many topics can be split in two on the **Topics** tab.
+
 **The digest says no news was filed this week.** Knowledge scan did not file anything. Open the **Settings** tab of [Knowledge Watch](app:/knowledge-watch): it says whether the scan is on, running, failed or stopped, and why. If its run reported `NO WEB SEARCH:`, the web search provider in Admin Center is missing or failing.
 
 **No digest arrived.** Check that **Knowledge weekly** is on, and look at **Where the digest goes**. A refused send is kept on the run's record in Agent Activity.

@@ -79,8 +79,9 @@ def _update(api, run_id: str, change) -> dict | None:
     return None
 
 
-def begin(api, kind: str, categories: list[str]) -> dict:
-    """The agent has started: the run someone asked for, or a scheduled one."""
+def begin(api, kind: str, categories: list[str], *, expected: list[str] | None = None) -> dict:
+    """The agent has started: the run someone asked for, or a scheduled one. `categories`
+    are the ones handed out so far; `expected`, every one the run is to scan."""
     found = open_run(api, kind)
     if found is None:
         found = request(api, kind, "schedule")
@@ -90,6 +91,8 @@ def begin(api, kind: str, categories: list[str]) -> dict:
             row["state"] = "running"
             row["started_at"] = items.stamp()
         row["categories"] = sorted(set(row.get("categories") or []) | set(categories))
+        if expected is not None:
+            row["expected"] = sorted(set(row.get("expected") or []) | set(expected))
     return _update(api, found["id"], start) or found
 
 
@@ -101,10 +104,29 @@ def filed(api, category: str, saved: int, refused: int) -> None:
     def mark(row):
         row["filed"][category] = row["filed"].get(category, 0) + saved
         row["refused"][category] = row["refused"].get(category, 0) + refused
-        if row.get("categories") and set(row["categories"]) <= set(row["filed"]):
+        wanted = set(row.get("expected") or row.get("categories") or [])
+        if wanted and wanted <= set(row["filed"]):
             row["state"] = "done"
             row["finished_at"] = items.stamp()
     _update(api, found["id"], mark)
+
+
+def close_scan(api) -> None:
+    """Every category was handed out: the run ends here even if one of them never filed,
+    and says which."""
+    found = open_run(api, "scan")
+    if found is None:
+        return
+
+    def close(row):
+        missing = sorted(set(row.get("expected") or []) - set(row["filed"]))
+        row["state"] = "failed" if missing else "done"
+        if missing:
+            row["problem"] = row.get("problem") or (
+                f"{len(missing)} categories were not filed: {', '.join(missing)}. A step may have run out of its "
+                "budget or failed; its report is in Agent Activity.")
+        row["finished_at"] = items.stamp()
+    _update(api, found["id"], close)
 
 
 def digest_done(api) -> None:
@@ -134,3 +156,13 @@ def finish(api, run_id: str, reply: str, *, failed: str = "") -> None:
             row["state"] = "done"
         row["finished_at"] = row.get("finished_at") or items.stamp()
     _update(api, run_id, close)
+
+
+def just_finished(api) -> bool:
+    """A Pipeline scan ended moments ago, so its later steps have nothing left to do and
+    must not start a new run of their own."""
+    last = next((r for r in listed(api) if r.get("kind") == "scan" and r.get("trigger") != "refresh"), None)
+    if last is None or last["state"] in ("running", "requested"):
+        return False
+    finished = items.parse(last.get("finished_at"))
+    return bool(finished and items.now() - finished < timedelta(minutes=STALE_MINUTES))

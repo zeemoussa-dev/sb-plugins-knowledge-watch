@@ -6,13 +6,23 @@
   "is_background_agent": true,
   "section_id": null,
   "depends_on": [],
-  "skill_ids": ["knowledge-scan"],
-  "tools": ["web"],
+  "skill_ids": [
+    "knowledge-scan"
+  ],
+  "tools": [
+    "web"
+  ],
   "preferred_index_ids": [],
   "primary_routing_snippet": null,
   "icon": "travel_explore",
   "color": null,
   "mcp_servers": [],
   "allowed_scripts": [],
-  "plugins": ["knowledge-watch"]
+  "plugins": [
+    "knowledge-watch"
+  ],
+  "limits": {
+    "model_calls": 70,
+    "tool_calls": 60
+  }
 }
