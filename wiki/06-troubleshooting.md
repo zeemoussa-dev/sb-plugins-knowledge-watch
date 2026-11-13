@@ -25,3 +25,5 @@ screens: [/knowledge-watch, /settings/plugins/knowledge-watch]
 **Refresh now is greyed out.** Only a Pipeline that is switched on can be run, only one scan runs at a time, and starting one needs write access to the vault.
 
 **The digest note is missing from the vault.** The digest's header on the screen says why, such as a folder outside the vault. Change **Vault folder** on the Settings page.
+
+**After an update the screen says it stopped working, or shows old figures.** The backend still runs the plugin's previous code. Use **Restart now** on Settings › System, then reload the page.

@@ -2,7 +2,7 @@
   "id": "knowledge-watch",
   "name": "Knowledge Watch",
   "description": "Keeps the CBO up to date on his industry, the technologies and the topics he follows: AI models and providers, hyperscalers and cloud, sovereign AI and policy, data centres, GPUs and power, the Gulf and UAE market, and the competitors and partners that matter. He chooses the knowledge categories and the topics in each. A researcher agent scans the web a few times a week and files dated, sourced items; an editor agent writes one weekly digest, sent by chat and email and filed as a note in the vault.",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "framework_api": "14.14.0",
   "category": "Knowledge",
   "requires": [],

@@ -2,6 +2,15 @@
 
 All notable changes to the Knowledge Watch plugin.
 
+## [1.4.1] - 2026-11-13
+
+From the first runs on the live install (2026-11-13). The first scan on 1.4.0 filed 17 items across six categories in 30 minutes. The first real digest was written from them, filed in the vault, and sent by chat and email.
+
+- fix: **Write the digest now is refused while a scan is running.** On the install, a digest run started seconds before the scan. It wrote and sent a digest saying nothing was filed. The route now answers "a scan is running; write the digest when it has finished", and the button waits for the scan.
+- fix: **the Settings tab does not crash on a state it does not know.** Right after the update, the backend still served 1.0's routes until it was restarted, and the page failed with "reading 'tone'". An unknown state is now shown as it is, in a neutral badge, and an answer without runs shows none.
+- docs: **an update needs a backend restart.** Like any plugin with a backend, Knowledge Watch's code loads only when the backend starts. After installing or updating, use **Restart now** on Settings > System, as the wizard says. `restarts_itself: true` in the install's answer means only that the install can restart itself from that button, not that it already has.
+- tests: 37.
+
 ## [1.4.0] - 2026-11-13
 
 Built for framework API 14.14.0, where a plugin ships the guardrail exceptions its own agents need.

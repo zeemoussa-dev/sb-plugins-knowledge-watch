@@ -195,3 +195,12 @@ def test_a_step_that_never_files_leaves_the_run_failed_with_which(registered):
             call(api, "save_items", category=brief["categories"][0]["category"], items=[])
     run = runs.listed(api)[0]
     assert run["state"] == "failed" and first in run["problem"]
+
+
+def test_the_digest_is_not_started_while_a_scan_is_filing(registered):
+    api = registered
+    api.switch_on("knowledge-weekly")
+    call(api, "scan_brief")
+    answer = route(api, "/pipelines/{pipeline_id}/run", "POST")("knowledge-weekly")
+    assert answer["started"] is False and "scan is running" in answer["note"]
+    assert api.jobs == []

@@ -43,12 +43,13 @@ function scheduleText(schedule: string | null | undefined): string {
   return (schedule ?? '').replace(/^CRON_TZ=\S+\s+/, '');
 }
 
-function PipelineCard({ view, mayRun, mayAdmin, onChanged }: {
-  view: PipelineView; mayRun: boolean; mayAdmin: boolean; onChanged: (said: string) => void;
+function PipelineCard({ view, mayRun, mayAdmin, scanRunning, onChanged }: {
+  view: PipelineView; mayRun: boolean; mayAdmin: boolean; scanRunning: boolean; onChanged: (said: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState('');
-  const health = HEALTH[view.state];
+  // A state this screen does not know (an older backend, a newer one) is shown, not a crash.
+  const health = HEALTH[view.state] ?? { tone: 'neutral' as Tone, label: view.state || 'Unknown' };
   const name = view.name ?? view.id;
   const run = view.run;
   const expected = run?.expected?.length || run?.categories.length || 0;
@@ -103,9 +104,10 @@ function PipelineCard({ view, mayRun, mayAdmin, onChanged }: {
           </div>
         </div>
         <div className="kw-actions">
-          <button type="button" className="btn btn-primary" disabled={busy || !mayRun || !view.cron_enabled || Boolean(run)}
+          <button type="button" className="btn btn-primary" disabled={busy || !mayRun || !view.cron_enabled || Boolean(run) || (view.kind === 'digest' && scanRunning)}
                   onClick={start}
-                  title={!view.cron_enabled ? 'Only a Pipeline that is on can be run' : undefined}>
+                  title={!view.cron_enabled ? 'Only a Pipeline that is on can be run'
+                   : (view.kind === 'digest' && scanRunning ? 'Wait for the scan to finish' : undefined)}>
             {busy ? 'Starting…' : (view.kind === 'scan' ? 'Refresh now' : 'Write the digest now')}
           </button>
           {mayAdmin && view.cron_job_id && (
@@ -151,7 +153,7 @@ export function RunSettings({ status, failed, onChanged }: {
       <NameCell name={`${run.kind === 'scan' ? 'Scan' : 'Digest'} · ${TRIGGER[run.trigger]}`}
                 sub={run.topic ? `topic ${run.topic}` : (run.category_names?.join(', ') || undefined)} />
     ) },
-    { key: 'state', header: 'State', render: (run) => <StatusBadge tone={RUN[run.state].tone}>{RUN[run.state].label}</StatusBadge> },
+    { key: 'state', header: 'State', render: (run) => { const shown = RUN[run.state] ?? { tone: 'neutral' as Tone, label: run.state || 'Unknown' }; return <StatusBadge tone={shown.tone}>{shown.label}</StatusBadge>; } },
     { key: 'started', header: 'Started', render: (run) => when(run.started_at), align: 'end' },
     { key: 'filed', header: 'Filed', align: 'end', hideBelow: 'md',
       render: (run) => (run.kind === 'scan' ? String(Object.values(run.filed).reduce((a, b) => a + b, 0)) : '–') },
@@ -168,7 +170,7 @@ export function RunSettings({ status, failed, onChanged }: {
       )}
       <div className="kw-grid">
         {status.pipelines.map((view) => (
-          <PipelineCard key={view.id} view={view} mayRun={status.may_run} mayAdmin={status.may_admin}
+          <PipelineCard key={view.id} view={view} mayRun={status.may_run} mayAdmin={status.may_admin} scanRunning={scanning}
                         onChanged={(text) => { setSaid(text); onChanged(text); }} />
         ))}
       </div>
@@ -178,7 +180,7 @@ export function RunSettings({ status, failed, onChanged }: {
                    rowKey={(row) => row.category_id} />
       </Card>
       <Card title="Recent runs" description="Newest first. A run that fails says why, in the words of the tool that failed.">
-        <DataTable label="Recent runs" columns={runColumns} rows={status.runs} rowKey={(run) => run.id}
+        <DataTable label="Recent runs" columns={runColumns} rows={status.runs ?? []} rowKey={(run) => run.id}
                    empty={<p className="text-muted">No run yet. Refresh now starts the first scan.</p>} />
       </Card>
       {status.may_admin && (
