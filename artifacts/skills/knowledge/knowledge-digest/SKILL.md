@@ -1,7 +1,7 @@
 ---
 name: knowledge-digest
 description: Writes the CBO's weekly Knowledge Watch digest from the news items filed since the last one -- headlines, one section per knowledge category, and what to watch next week -- and files it on the screen and in the vault. Use in the Knowledge weekly Pipeline.
-version: 1.0.0
+version: 1.1.0
 author: knowledge-watch
 license: MIT
 platforms: [linux, windows]
@@ -34,6 +34,9 @@ metadata:
    its markdown) and `sources` (the links you cited).
 
 ## Rules
+
+- A tool that refuses or fails: call `knowledge_watch_report_problem` (kind `digest`)
+  with what it said, so the screen shows it.
 
 - Every story is an item the tool gave you. Never add one from memory.
 - Names, numbers and dates exactly as the item gives them.

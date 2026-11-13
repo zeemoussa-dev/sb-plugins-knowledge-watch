@@ -64,7 +64,7 @@ function PipelineDrawer({ state, onClose, onSaved, onSaid }: {
   return (
     <EditDrawer title={name} onClose={onClose} onSave={save} saving={saving}
                 description={state.id === 'knowledge-scan'
-                  ? 'Searches the web for every category and topic on the Interests tab and files what it finds. It sends nothing.'
+                  ? 'Searches the web for every category and topic on the Topics tab and files what it finds. It sends nothing.'
                   : 'Writes the weekly digest from the items filed since the last one, and sends it where you set.'}
                 secondary={(
                   <button type="button" className="btn" disabled={!state.cron_enabled || saving} onClick={run}
@@ -158,7 +158,7 @@ function ScanSizeDrawer({ settings, onClose, onSaved }: {
 /** The plugin's settings as one sheet: when it runs, where the digest goes, and how
  *  the web is scanned. An Admin Center page: the backend refuses a change without
  *  `manage_plugins`. The CBO's own categories and topics are on the Knowledge Watch
- *  screen's Interests tab. */
+ *  screen's Topics tab. */
 export function SettingsPage() {
   const [settings, setSettings] = useState<PluginSettings | null>(null);
   const [weekly, setWeekly] = useState<PipelineDetail | null>(null);

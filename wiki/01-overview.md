@@ -8,7 +8,7 @@ screens: [/knowledge-watch]
 
 Knowledge Watch keeps you up to date on the technology and industry landscape that matters to Core42. That means AI models and providers, hyperscalers and cloud, sovereign AI and policy, data centres, GPUs and power, the Gulf and UAE technology market, and the competitors and partners you name.
 
-You choose what it follows. Each **knowledge category** is a beat, with the **topics** you are interested in inside it, and each topic can carry a note on what you want to know about it. See [Interests and news](wiki:interests-and-news).
+You choose what it follows. Each **knowledge category** is a beat, with the **topics** you are interested in inside it, and each topic can carry a note on what you want to know about it. See [Topics and news](wiki:topics-and-news).
 
 ## What you receive
 
@@ -22,7 +22,7 @@ There are no daily alerts. Between digests, the **News** tab shows every item as
 
 | Part | What it is |
 |---|---|
-| The **Knowledge Watch** screen | Three tabs: **Weekly digest**, **News** and **Interests**. |
+| The **Knowledge Watch** screen | Four tabs: **Weekly digest**, **News**, **Topics** and **Settings** (how its runs are doing, and Refresh now). |
 | Two background agents | The **Knowledge Researcher** scans the web and files items; it cannot read the vault. The **Knowledge Editor** writes the digest from those items; it has no web access. Nobody chats with either. |
 | Two Pipelines | **Knowledge scan** runs Sunday, Tuesday and Thursday at 06:00 Dubai. **Knowledge weekly** runs Sunday at 18:00 Dubai. Both arrive switched off. See [Pipelines and delivery](wiki:pipelines-and-delivery). |
 | Two Skills | `knowledge-scan` and `knowledge-digest`. |

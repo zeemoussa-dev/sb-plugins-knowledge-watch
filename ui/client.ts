@@ -23,7 +23,15 @@ export function reason(error: unknown): string {
 export interface Topic {
   name: string;
   notes: string;
+  /** Searches the CBO wants run for this topic. */
+  search_terms: string[];
+  /** Domains to look at first for this topic. */
+  sources: string[];
+  /** What he does not want filed under it. */
+  leave_out: string;
 }
+
+export const BLANK_TOPIC: Topic = { name: '', notes: '', search_terms: [], sources: [], leave_out: '' };
 
 export interface Category {
   id: string;
@@ -63,10 +71,10 @@ export interface Item {
   found_at: string;
 }
 
-export function fetchItems(category: string, days: number, q: string): Promise<{
+export function fetchItems(category: string, days: number, q: string, topic = ''): Promise<{
   items: Item[]; categories: { id: string; name: string }[];
 }> {
-  const query = new URLSearchParams({ category, days: String(days), q });
+  const query = new URLSearchParams({ category, topic, days: String(days), q });
   return apiFetch(`${BASE}/items?${query.toString()}`);
 }
 
@@ -105,12 +113,49 @@ export interface PipelineState {
   last_status?: string | null;
 }
 
+export type RunState = 'requested' | 'running' | 'done' | 'failed' | 'stopped';
+
+export interface Run {
+  id: string;
+  kind: 'scan' | 'digest';
+  trigger: 'schedule' | 'run now' | 'refresh';
+  state: RunState;
+  requested_at: string;
+  started_at: string;
+  finished_at: string;
+  category: string;
+  topic: string;
+  by: string;
+  categories: string[];
+  category_names?: string[];
+  filed: Record<string, number>;
+  refused: Record<string, number>;
+  problem: string;
+  reply: string;
+}
+
+export type PipelineHealth = 'missing' | 'no job' | 'running' | 'failed' | 'stopped' | 'off' | 'on';
+
+export interface PipelineView extends PipelineState {
+  kind: 'scan' | 'digest';
+  state: PipelineHealth;
+  why: string;
+  run: Run | null;
+}
+
 export interface Status {
   categories: number;
   topics: number;
   items_week: number;
-  last_scans: { category: string; at?: string; saved?: number }[];
-  pipelines: PipelineState[];
+  last_scans: { category: string; category_id: string; at?: string; saved?: number; refused?: number; queries?: string[] }[];
+  pipelines: PipelineView[];
+  runs: Run[];
+  may_run: boolean;
+  may_admin: boolean;
+}
+
+export function refresh(category: string, topic = ''): Promise<{ started: boolean; run: Run }> {
+  return send(`${BASE}/refresh`, 'POST', { category, topic });
 }
 
 export function fetchStatus(): Promise<Status> {

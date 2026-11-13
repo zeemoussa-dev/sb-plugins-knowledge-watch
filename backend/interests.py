@@ -3,7 +3,7 @@ is interested in inside each one.
 
 A category is a beat ("Hyperscalers and cloud") with a line on why it matters to him;
 each topic in it is one thing to watch ("Oracle OCI"), with his own note on what he wants
-to know about it. He adds, renames, switches off and removes both on the Interests tab.
+to know about it. He adds, renames, switches off and removes both on the Topics tab.
 The researcher scans every category that is on, topic by topic; the digest has one
 section per category that is on.
 
@@ -63,6 +63,30 @@ def _text(value, limit: int = 300) -> str:
     return " ".join(str(value or "").split())[:limit]
 
 
+def _listed(value, most: int, limit: int) -> list[str]:
+    """A list as sent, or one comma- or line-separated string, trimmed and unique."""
+    parts = value if isinstance(value, list) else str(value or "").replace("\n", ",").split(",")
+    found: list[str] = []
+    for part in parts:
+        part = _text(part, limit)
+        if part and part.lower() not in (f.lower() for f in found):
+            found.append(part)
+    return found[:most]
+
+
+def _domain(text: str) -> str:
+    text = text.lower().removeprefix("https://").removeprefix("http://").removeprefix("www.")
+    return text.split("/")[0].strip()
+
+
+def find_topic(api, category_id: str, topic_name: str) -> tuple[dict, dict] | None:
+    category = get(api, category_id)
+    if category is None:
+        return None
+    topic = next((t for t in category["topics"] if t["name"].lower() == str(topic_name or "").strip().lower()), None)
+    return (category, topic) if topic else None
+
+
 def slug(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "category"
 
@@ -74,12 +98,12 @@ def _defaults() -> list[dict]:
 def read(api) -> list[dict]:
     raw = api.data.read_text(STORE)
     if not raw:
-        return _defaults()
+        return clean(_defaults())
     try:
         found = json.loads(raw).get("categories")
     except (ValueError, AttributeError):
-        return _defaults()
-    return clean(found) if isinstance(found, list) else _defaults()
+        return clean(_defaults())
+    return clean(found) if isinstance(found, list) else clean(_defaults())
 
 
 def enabled(api) -> list[dict]:
@@ -119,7 +143,10 @@ def clean(categories) -> list[dict]:
             if not tname or tname.lower() in names:
                 continue
             names.add(tname.lower())
-            topics.append({"name": tname, "notes": _text(topic.get("notes"), 300)})
+            topics.append({"name": tname, "notes": _text(topic.get("notes"), 300),
+                           "search_terms": _listed(topic.get("search_terms"), 10, 120),
+                           "sources": [d for d in (_domain(s) for s in _listed(topic.get("sources"), 10, 120)) if d],
+                           "leave_out": _text(topic.get("leave_out"), 300)})
         if len(topics) > MAX_TOPICS:
             raise ValueError(f"{name}: at most {MAX_TOPICS} topics")
         kept.append({"id": cid, "name": name, "about": _text(row.get("about"), 300),

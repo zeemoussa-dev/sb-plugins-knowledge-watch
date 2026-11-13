@@ -20,14 +20,18 @@ const ui: PluginUi = {
       title: 'Knowledge Watch',
       summary: 'Your weekly digest on the industry, the technologies and the topics you follow, every item filed, and your categories and topics.',
       body: '**Weekly digest** is the Sunday digest, newest first: headlines, one section per category and what '
-        + 'to watch next week. It is also sent to you by chat and email, and filed as a note in the vault.\n\n'
+        + 'to watch next week. It is also sent to you by chat and email, and filed as a note in the vault; '
+        + '**Open the note** opens it there.\n\n'
         + '**News** lists every item the researcher filed, with its source, date and why it matters to Core42 '
         + '(the researcher\'s inference). Filter by category, period or words.\n\n'
-        + '**Interests** is yours to change: add a knowledge category, add the topics you want followed in it, '
-        + 'each with a note on what you want to know, or switch a category off. The next scan uses them. '
-        + 'See the Knowledge Watch Guide in the Wiki for more.',
+        + '**Topics** is yours to change: **Add a topic**, open one to say what you want to know, give it its own '
+        + 'search terms, sources to look at first and what to leave out, see its news, and **Refresh this topic now**.\n\n'
+        + '**Settings** shows each job: on, off, running, failed or stopped, and why when it does not work. '
+        + '**Refresh now** scans everything now, **Write the digest now** writes the digest, and each category '
+        + 'can be refreshed on its own. See the Knowledge Watch Guide in the Wiki for more.',
       keywords: ['industry', 'news', 'digest', 'weekly', 'ai', 'cloud', 'sovereign', 'gpu', 'data centre',
-        'gulf', 'competitors', 'partners', 'topics', 'categories', 'interests'],
+        'gulf', 'competitors', 'partners', 'topics', 'categories', 'interests', 'refresh', 'running', 'failed',
+        'search terms', 'notes'],
       href: '/knowledge-watch',
     },
     {

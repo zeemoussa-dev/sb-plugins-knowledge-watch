@@ -66,3 +66,21 @@
     grid-row: 2;
   }
 }
+
+.kw-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.kw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--space-5);
+}
+
+.kw-subtitle {
+  margin: 0;
+  font-size: var(--font-size-base);
+}

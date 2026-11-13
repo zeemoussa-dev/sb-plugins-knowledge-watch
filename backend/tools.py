@@ -9,15 +9,27 @@ from __future__ import annotations
 
 import json
 
-from . import digests, interests, items, settings
+from . import digests, interests, items, runs, settings
 
 
 def _answer(value) -> str:
     return json.dumps(value, ensure_ascii=False, default=str)
 
 
+def describe(topic: dict) -> str:
+    """One topic as the prompt names it, with how the CBO tuned its search."""
+    parts = [topic["notes"]] if topic.get("notes") else []
+    if topic.get("search_terms"):
+        parts.append("search for: " + ", ".join(topic["search_terms"]))
+    if topic.get("sources"):
+        parts.append("look first at: " + ", ".join(topic["sources"]))
+    if topic.get("leave_out"):
+        parts.append("leave out: " + topic["leave_out"])
+    return f"{topic['name']} ({'; '.join(parts)})" if parts else topic["name"]
+
+
 def scan_prompt(api, category: dict, since: str) -> str:
-    topics = "; ".join(f"{t['name']} ({t['notes']})" if t["notes"] else t["name"] for t in category["topics"])
+    topics = "; ".join(describe(t) for t in category["topics"])
     values = {"category": category["name"], "category_about": category["about"] or "no note",
               "since": since, "topics": topics,
               "preferred": ", ".join(settings.domains(api, "preferred_domains")) or "none set"}
@@ -30,12 +42,18 @@ def scan_prompt(api, category: dict, since: str) -> str:
         return template + "\n\n" + "\n".join(f"{k}: {v}" for k, v in values.items())
 
 
-def scan_brief(api, category_id: str = "") -> dict:
+def scan_brief(api, category_id: str = "", topic_name: str = "") -> dict:
     chosen = interests.enabled(api)
     if category_id:
-        chosen = [c for c in chosen if c["id"] == category_id]
+        chosen = [c for c in interests.read(api) if c["id"] == category_id and c["topics"]]
         if not chosen:
-            raise ValueError(f"{category_id!r} is not a category that is on")
+            raise ValueError(f"{category_id!r} is not a category with topics")
+    if topic_name:
+        found = [{**c, "topics": [t for t in c["topics"] if t["name"].lower() == topic_name.lower()]} for c in chosen]
+        chosen = [c for c in found if c["topics"]]
+        if not chosen:
+            raise ValueError(f"{topic_name!r} is not a topic of {category_id or 'any category'}")
+    runs.begin(api, "scan", [c["id"] for c in chosen])
     jobs = []
     for category in chosen:
         since = items.since(api, category["id"])
@@ -50,7 +68,14 @@ def scan_brief(api, category_id: str = "") -> dict:
 
 def register(api) -> None:
     def brief(args, context=None):
-        return _answer(scan_brief(api, str((args or {}).get("category") or "").strip()))
+        args = args or {}
+        return _answer(scan_brief(api, str(args.get("category") or "").strip(), str(args.get("topic") or "").strip()))
+
+    def report_problem(args, context=None):
+        args = args or {}
+        kind = str(args.get("kind") or "scan")
+        run = runs.problem(api, kind if kind in runs.KINDS else "scan", str(args.get("problem") or ""))
+        return _answer({"recorded": True, "run": run.get("id")})
 
     def save_items(args, context=None):
         args = args or {}
@@ -78,10 +103,20 @@ def register(api) -> None:
     api.register_agent_tool(
         "scan_brief", handler=brief,
         description=("What to scan the web for now: each knowledge category that is on, with the topics the CBO "
-                     "is interested in (and his note on each), the date to look back to, the prompt to scan it "
-                     "with, and what that category already holds so nothing is filed twice. Also the preferred "
-                     "and blocked sources and the most items to file per category. `category` narrows it to one."),
-        parameters={"type": "object", "properties": {"category": {"type": "string"}}})
+                     "is interested in (each with his note, his own search terms, the sources to look at first and "
+                     "what to leave out), the date to look back to, the prompt to scan it with, and what that "
+                     "category already holds so nothing is filed twice. Also the preferred and blocked sources "
+                     "and the most items to file per category. `category` narrows it to one category, and "
+                     "`topic` to one topic of it."),
+        parameters={"type": "object", "properties": {"category": {"type": "string"}, "topic": {"type": "string"}}})
+    api.register_agent_tool(
+        "report_problem", handler=report_problem,
+        description=("Records why a scan or a digest could not go on -- web search failing or missing, a tool "
+                     "refusing -- so the Knowledge Watch screen shows it. `kind` is scan (default) or digest; "
+                     "`problem` is what happened, in the tool's own words."),
+        parameters={"type": "object", "properties": {
+            "kind": {"type": "string", "enum": list(runs.KINDS)}, "problem": {"type": "string"}},
+            "required": ["problem"]})
     api.register_agent_tool(
         "save_items", handler=save_items,
         description=("Files the stories found for one category. Each item: `url` (required), `title`, `source`, "

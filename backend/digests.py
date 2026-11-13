@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-from . import interests, items, settings
+from . import interests, items, runs, settings
 
 STORE = "data/KnowledgeWatch/digests.json"
 KEEP = 104
@@ -74,6 +74,7 @@ def facts(api) -> dict:
                                                          "why_it_matters", "importance", "companies")}
                                   for i in rows]})
     previous = latest(api)
+    runs.begin(api, "digest", [])
     return {
         "week": week_label(end),
         "from": items.stamp(start), "to": items.stamp(end),
@@ -127,4 +128,5 @@ def save(api, sent_sections, *, sources=None) -> dict:
               "sources": [str(s)[:300] for s in (sources or [])][:100], "note": note}
     found = [digest] + _read(api)
     api.data.write_text(STORE, json.dumps({"digests": found[:KEEP]}, ensure_ascii=False, indent=1))
+    runs.digest_done(api)
     return {"saved": True, "id": digest["id"], "note": note, "markdown": text}

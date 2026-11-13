@@ -9,11 +9,11 @@ from pathlib import Path
 import pytest
 from fastapi import HTTPException
 
-from backend import digests, interests, items, pipelines, settings
+from backend import digests, interests, items, pipelines, runs, settings
 from tests.conftest import call, route
 
 REPO = Path(__file__).resolve().parent.parent
-TOOLS = {"scan_brief", "save_items", "digest_facts", "save_digest", "recent_items"}
+TOOLS = {"scan_brief", "save_items", "digest_facts", "save_digest", "recent_items", "report_problem"}
 
 
 def story(n: int, **extra) -> dict:
@@ -27,7 +27,7 @@ def story(n: int, **extra) -> dict:
 def test_register_wires_everything_through_the_plugin_api(registered):
     assert set(registered.tools) == TOOLS
     assert len(registered.routers) == 1
-    assert {interests.STORE, items.STORE, digests.STORE} <= set(registered.registered)
+    assert {interests.STORE, items.STORE, digests.STORE, runs.STORE} <= set(registered.registered)
 
 
 # -- the interests ------------------------------------------------------------

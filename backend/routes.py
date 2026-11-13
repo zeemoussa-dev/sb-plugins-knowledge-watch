@@ -7,9 +7,14 @@ install's vault.
 """
 from __future__ import annotations
 
+import threading
+
 from fastapi import APIRouter, Body, HTTPException
 
-from . import digests, interests, items, pipelines, settings
+from . import digests, interests, items, pipelines, runs, settings
+
+RESEARCHER = "knowledge-researcher"
+REFRESH_TIMEOUT = 900.0
 
 
 def _caller(api) -> dict | None:
@@ -53,6 +58,40 @@ def _may_change_interests(api) -> None:
         raise HTTPException(status_code=403, detail="Changing the interests needs write access to the vault.")
 
 
+# Starting a run the Admin already switched on is the CBO's own: the same people who
+# may change his interests may ask for a refresh.
+_may_run = _may_change_interests
+
+
+def _may_run_quietly(api) -> bool:
+    try:
+        _may_run(api)
+        return True
+    except HTTPException:
+        return False
+
+
+def _pipeline_view(api, pipeline_id: str, open_run: dict | None, last_run: dict | None) -> dict:
+    """A Pipeline as the screen shows it: one `state` and, when something is wrong, why."""
+    found = pipelines.state(api, pipeline_id)
+    if not found.get("installed"):
+        return {**found, "state": "missing", "why": "The Pipeline is not on this install: reinstall the plugin."}
+    if not found.get("cron_job_id"):
+        return {**found, "state": "no job", "why": "It has no job yet: an Admin gives it a schedule."}
+    if open_run:
+        return {**found, "state": "running", "why": ""}
+    if last_run and last_run["state"] in ("failed", "stopped"):
+        why = last_run.get("problem") or ("It stopped without finishing. Its report is in Agent Activity."
+                                          if last_run["state"] == "stopped" else "")
+        return {**found, "state": last_run["state"], "why": why}
+    if found.get("last_status") == "failed":
+        return {**found, "state": "failed",
+                "why": "The last run failed before the agent could say why. Its report is in Agent Activity."}
+    if not found.get("cron_enabled"):
+        return {**found, "state": "off", "why": "It is switched off, so it does not run on its schedule."}
+    return {**found, "state": "on", "why": ""}
+
+
 def build_router(api) -> APIRouter:
     router = APIRouter()
 
@@ -80,11 +119,11 @@ def build_router(api) -> APIRouter:
     # -- the news and the digests --------------------------------------------------
 
     @router.get("/items")
-    def get_items(category: str = "", days: int = 30, q: str = "") -> dict:
+    def get_items(category: str = "", topic: str = "", days: int = 30, q: str = "") -> dict:
         _may_read(api)
         days = min(max(days, 1), items.KEEP_DAYS)
         names = {c["id"]: c["name"] for c in interests.read(api)}
-        found = items.recent(api, category=category, days=days, query=q, limit=300)
+        found = items.recent(api, category=category, topic=topic, days=days, query=q, limit=300)
         return {"items": [{**i, "category_name": names.get(i.get("category"), i.get("category"))} for i in found],
                 "categories": [{"id": k, "name": v} for k, v in names.items()]}
 
@@ -103,16 +142,63 @@ def build_router(api) -> APIRouter:
 
     @router.get("/status")
     def status() -> dict:
-        """What the main screen shows at the top: the last scans, the next runs."""
+        """Everything the screen says about how it is doing: the figures, each Pipeline's
+        state and why, the run going now, the recent runs, and each category's last scan."""
         _may_read(api)
         enabled = interests.enabled(api)
         last = {}
         for scan in items.scans(api):
             last.setdefault(scan.get("category"), scan)
+        history = runs.listed(api)
+        views = []
+        for pid, kind in ((pipelines.SCAN, "scan"), (pipelines.WEEKLY, "digest")):
+            open_run = next((r for r in history if r["kind"] == kind and r["state"] in ("running", "requested")), None)
+            last_run = next((r for r in history if r["kind"] == kind and r.get("trigger") != "refresh"), None)
+            views.append({**_pipeline_view(api, pid, open_run, last_run), "kind": kind, "run": open_run})
+        names = {c["id"]: c["name"] for c in interests.read(api)}
         return {"categories": len(enabled), "topics": sum(len(c["topics"]) for c in enabled),
                 "items_week": len(items.recent(api, days=7, limit=10000)),
-                "last_scans": [{"category": c["name"], **(last.get(c["id"]) or {})} for c in enabled],
-                "pipelines": [pipelines.state(api, pid) for pid in pipelines.ALL]}
+                "last_scans": [{"category": c["name"], "category_id": c["id"], **(last.get(c["id"]) or {})}
+                               for c in enabled],
+                "pipelines": views,
+                "runs": [{**r, "category_names": [names.get(c, c) for c in r.get("categories") or []]}
+                         for r in history[:20]],
+                "may_run": _may_run_quietly(api), "may_admin": _has(api, "manage_plugins")}
+
+    @router.post("/refresh")
+    def refresh(payload: dict = Body(...)) -> dict:
+        """Scans one category, or one topic of it, now, outside the schedule: one turn of
+        the researcher, in the background. The run is on the status as it goes."""
+        _may_run(api)
+        category = str((payload or {}).get("category") or "").strip()
+        topic = str((payload or {}).get("topic") or "").strip()
+        if interests.get(api, category) is None:
+            raise HTTPException(status_code=404, detail=f"There is no category {category!r}.")
+        if topic and interests.find_topic(api, category, topic) is None:
+            raise HTTPException(status_code=404, detail=f"There is no topic {topic!r} in that category.")
+        if runs.open_run(api, "scan"):
+            raise HTTPException(status_code=409, detail="A scan is running already. Refresh again when it has finished.")
+        agents = getattr(api, "agents", None)
+        if agents is None or not hasattr(agents, "run"):
+            raise HTTPException(status_code=501, detail="This install cannot run a plugin agent: it needs a newer framework.")
+        caller = _caller(api) or {}
+        run = runs.request(api, "scan", "refresh", category=category, topic=topic, by=str(caller.get("name") or ""))
+        what = f"the topic `{topic}` of the category `{category}`" if topic else f"the category `{category}`"
+        instruction = (
+            f"Follow the knowledge-scan Skill for {what} only: call `knowledge_watch_scan_brief` with category "
+            f"`{category}`" + (f" and topic `{topic}`" if topic else "") + ", scan it with `web_search` and "
+            "`read_page`, and file it with `knowledge_watch_save_items`. If you cannot search, call "
+            "`knowledge_watch_report_problem` first. Reply with one line.")
+
+        def work():
+            try:
+                reply = agents.run(RESEARCHER, instruction, timeout=REFRESH_TIMEOUT)
+                runs.finish(api, run["id"], reply)
+            except Exception as exc:  # AgentRunRefused or a runtime failure: shown on the screen
+                runs.finish(api, run["id"], "", failed=str(exc) or type(exc).__name__)
+
+        threading.Thread(target=work, name=f"knowledge-watch-refresh-{run['id']}", daemon=True).start()
+        return {"started": True, "run": run}
 
     # -- the plugin-wide Settings page -------------------------------------------
 
@@ -155,10 +241,16 @@ def build_router(api) -> APIRouter:
 
     @router.post("/pipelines/{pipeline_id}/run")
     def run_pipeline(pipeline_id: str) -> dict:
-        _require(api, "manage_plugins")
+        _may_run(api)
         if pipeline_id not in pipelines.ALL:
             raise HTTPException(status_code=404, detail=f"no Pipeline {pipeline_id!r} in this plugin")
+        kind = "scan" if pipeline_id == pipelines.SCAN else "digest"
+        if runs.open_run(api, kind):
+            return {"started": False, "note": "it is running already"}
         started, why = pipelines.fire(api, pipeline_id)
+        if started:
+            caller = _caller(api) or {}
+            runs.request(api, kind, "run now", by=str(caller.get("name") or ""))
         return {"started": started, "note": why}
 
     return router

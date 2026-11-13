@@ -15,7 +15,7 @@ import json
 from datetime import date, datetime, timedelta, timezone
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
-from . import interests, settings
+from . import interests, runs, settings
 
 STORE = "data/KnowledgeWatch/items.json"
 KEEP_DAYS = 180
@@ -104,12 +104,15 @@ def since(api, category_id: str) -> str:
     return start.isoformat()
 
 
-def recent(api, *, category: str = "", days: int = 30, query: str = "", limit: int = 200) -> list[dict]:
+def recent(api, *, category: str = "", topic: str = "", days: int = 30, query: str = "",
+           limit: int = 200) -> list[dict]:
     edge = now() - timedelta(days=days)
     q = query.lower().strip()
     found = []
     for item in all_items(api):
         if category and item.get("category") != category:
+            continue
+        if topic and str(item.get("topic") or "").lower() != topic.lower():
             continue
         if (parse(item.get("found_at")) or now()) < edge:
             continue
@@ -188,4 +191,5 @@ def save(api, category_id: str, rows, *, queries=None, note: str = "") -> dict:
                              "refused": len(refused), "queries": [_text(q, 200) for q in (queries or [])][:20],
                              "note": _text(note, 300)})
     _write(api, book)
+    runs.filed(api, category["id"], len(saved), len(refused))
     return {"saved": len(saved), "refused": refused, "category": category["id"]}

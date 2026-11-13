@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import {
   Card, ChoiceField, ChoicePicker, EmptyState, LoadingState, Notice, PageHeader, SearchField, SegmentedChoice,
   StatTiles, StatusBadge, Tabs, Toolbar,
@@ -8,10 +9,11 @@ import { useUrlState } from '../../pluginHost/state';
 import {
   fetchDigest, fetchDigests, fetchItems, fetchStatus, reason, type Digest, type DigestEntry, type Item, type Status,
 } from './client';
-import { Interests } from './Interests';
+import { RunSettings } from './RunSettings';
+import { Topics } from './Topics';
 
 export const PAGE = '/knowledge-watch';
-const TABS = ['digest', 'news', 'interests'] as const;
+const TABS = ['digest', 'news', 'topics', 'settings'] as const;
 type Tab = (typeof TABS)[number];
 const PERIODS = ['7', '30', '90', '180'] as const;
 type Period = (typeof PERIODS)[number];
@@ -21,9 +23,11 @@ function when(stamp: string | null | undefined): string {
   return stamp ? stamp.slice(0, 16).replace('T', ' ') : '';
 }
 
-function Overview({ status, digests }: { status: Status | null; digests: DigestEntry[] | null }) {
+function Overview({ status, digests, onOpenSettings }: {
+  status: Status | null; digests: DigestEntry[] | null; onOpenSettings: () => void;
+}) {
   if (!status) return <LoadingState rows={1} label="Loading the figures" />;
-  const off = status.pipelines.filter((p) => !p.installed || !p.cron_enabled);
+  const troubled = status.pipelines.filter((p) => !['on', 'running'].includes(p.state));
   return (
     <>
       <StatTiles label="Knowledge Watch at a glance" stats={[
@@ -33,15 +37,20 @@ function Overview({ status, digests }: { status: Status | null; digests: DigestE
         { key: 'digest', label: 'Last digest', value: digests?.[0]?.week ?? 'none yet',
           note: digests?.[0] ? `${digests[0].items} items` : 'Sunday 18:00 Dubai' },
       ]} />
-      {off.length > 0 && (
-        <Notice tone="info">
-          {off.map((p) => p.name ?? p.id).join(' and ')} {off.length > 1 ? 'are' : 'is'} switched off, so
-          {off.length > 1 ? ' they do' : ' it does'} not run. An Admin switches {off.length > 1 ? 'them' : 'it'} on
-          in Admin Center, on the Knowledge Watch settings page.
+      {troubled.length > 0 && (
+        <Notice tone={troubled.some((p) => p.state === 'failed' || p.state === 'stopped') ? 'warning' : 'info'}
+                action={<button type="button" className="btn btn-sm" onClick={onOpenSettings}>See why</button>}>
+          {troubled.map((p) => `${p.name ?? p.id} is ${p.state === 'off' ? 'switched off' : p.state}`).join('; ')}.
         </Notice>
       )}
     </>
   );
+}
+
+/** The vault's own note page, by the note's name. */
+function notePath(note: string): string {
+  const stem = note.split('/').pop()?.replace(/\.md$/, '') ?? note;
+  return `/browse/${encodeURIComponent(stem)}`;
 }
 
 function Digests({ rows, failed }: { rows: DigestEntry[] | null; failed: string }) {
@@ -82,7 +91,10 @@ function Digests({ rows, failed }: { rows: DigestEntry[] | null; failed: string 
           {open.note.startsWith('not filed') && <Notice tone="warning">The vault note was {open.note}.</Notice>}
           <NoteText text={open.markdown} />
           {open.note && !open.note.startsWith('not filed') && (
-            <p className="text-muted">Filed in the vault as <span className="mono">{open.note}</span>.</p>
+            <p className="text-muted">
+              Filed in the vault as <span className="mono">{open.note}</span>.{' '}
+              <Link to={notePath(open.note)}>Open the note</Link>
+            </p>
           )}
         </Card>
       )}
@@ -170,37 +182,52 @@ function News({ onCount }: { onCount: (count: number) => void }) {
   );
 }
 
-/** The CBO's industry, technology and topic news: the weekly digests, every item filed, and the knowledge
- *  categories and topics he wants followed, one section per tab. */
+/** The CBO's industry, technology and topic news: the weekly digests, every item filed,
+ *  the categories and topics he follows, and how its runs are doing, one per tab. */
 export function KnowledgeWatchPage() {
   const [tab, setTab] = useUrlState<Tab>('tab', 'digest', { valid: TABS });
   const [status, setStatus] = useState<Status | null>(null);
+  const [statusFailed, setStatusFailed] = useState('');
   const [digests, setDigests] = useState<DigestEntry[] | null>(null);
   const [digestsFailed, setDigestsFailed] = useState('');
   const [newsCount, setNewsCount] = useState<number | undefined>(undefined);
-  const [categoryCount, setCategoryCount] = useState<number | undefined>(undefined);
+  const [topicCount, setTopicCount] = useState<number | undefined>(undefined);
   const countNews = useCallback((count: number) => setNewsCount(count), []);
-  const countCategories = useCallback((count: number) => setCategoryCount(count), []);
+  const countTopics = useCallback((count: number) => setTopicCount(count), []);
 
-  useEffect(() => {
-    fetchStatus().then((found) => { setStatus(found); setCategoryCount((was) => was ?? found.categories); },
-      () => setStatus(null));
+  const loadStatus = useCallback(() => {
+    fetchStatus().then((found) => { setStatus(found); setStatusFailed(''); },
+      (error) => setStatusFailed(`How it is doing could not be read: ${reason(error)}. Try again in a moment.`));
+  }, []);
+  const loadDigests = useCallback(() => {
     fetchDigests().then(setDigests, (error) => setDigestsFailed(`The digests could not be read: ${reason(error)}`));
   }, []);
+  useEffect(() => { loadStatus(); loadDigests(); }, [loadStatus, loadDigests]);
+
+  // While a run is going, read the status again every few seconds, so its progress and
+  // its end show without a refresh; a digest that finished appears on its tab too.
+  const running = Boolean(status?.pipelines.some((p) => p.run));
+  useEffect(() => {
+    if (!running) return undefined;
+    const timer = window.setInterval(() => { loadStatus(); loadDigests(); }, 8000);
+    return () => window.clearInterval(timer);
+  }, [running, loadStatus, loadDigests]);
 
   return (
     <>
       <PageHeader title="Knowledge Watch"
                   description="The industry, the technologies and the topics you follow, in the knowledge categories you choose." />
       <div className="stack">
-        <Overview status={status} digests={digests} />
+        <Overview status={status} digests={digests} onOpenSettings={() => setTab('settings')} />
         <Tabs label="Knowledge Watch" value={tab} onChange={(value) => setTab(value as Tab)}
               tabs={[{ value: 'digest', label: 'Weekly digest', count: digests?.length },
                 { value: 'news', label: 'News', count: newsCount ?? status?.items_week },
-                { value: 'interests', label: 'Interests', count: categoryCount }]} />
+                { value: 'topics', label: 'Topics', count: topicCount ?? status?.topics },
+                { value: 'settings', label: 'Settings' }]} />
         {tab === 'digest' && <Digests rows={digests} failed={digestsFailed} />}
         {tab === 'news' && <News onCount={countNews} />}
-        {tab === 'interests' && <Interests onCount={countCategories} />}
+        {tab === 'topics' && <Topics mayRun={Boolean(status?.may_run)} onCount={countTopics} onRefreshed={loadStatus} />}
+        {tab === 'settings' && <RunSettings status={status} failed={statusFailed} onChanged={loadStatus} />}
       </div>
     </>
   );

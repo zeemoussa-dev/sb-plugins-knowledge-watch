@@ -12,7 +12,7 @@
       "depends_on": [],
       "type": "producer",
       "agent_id": "knowledge-researcher",
-      "instruction": "Follow the knowledge-scan Skill: call `knowledge_watch_scan_brief`; if it lists no category reply NOTHING DUE. Otherwise scan each category with `web_search` and `read_page`, and file each one with `knowledge_watch_save_items`, with an empty list when nothing new was found. Write nothing any other way. Report one line per category."
+      "instruction": "Follow the knowledge-scan Skill: call `knowledge_watch_scan_brief`; if it lists no category reply NOTHING DUE. Otherwise scan each category with `web_search` and `read_page`, using each topic's own search terms, and file each one with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Report one line per category."
     }
   ]
 }

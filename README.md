@@ -7,7 +7,7 @@ that matter to Core42.
 
 - **His interests.** He chooses the knowledge categories and the topics he is
   interested in inside each, with a note per topic on what he wants to know (the
-  **Interests** tab). Six categories ship.
+  **Topics** tab), and tunes each topic's search. Six categories ship.
 - **A scan** three times a week: a researcher agent searches the web for every topic
   and files dated, sourced items.
 - **A weekly digest** on Sunday evening, written by an editor agent from those items,
@@ -24,7 +24,7 @@ The Guide in the Wiki (`wiki/`) is the user's manual; the design is
 | Skills | `knowledge-scan`, `knowledge-digest` |
 | Pipelines | `knowledge-scan`: `CRON_TZ=Asia/Dubai 0 6 * * 0,2,4`. `knowledge-weekly`: `CRON_TZ=Asia/Dubai 0 18 * * 0`. Both ship **switched off**. |
 | Agent tools | `knowledge_watch_scan_brief`, `_save_items`, `_digest_facts`, `_save_digest`, `_recent_items` |
-| Screens | `/knowledge-watch` (Weekly digest, News, Interests), the Settings page `/settings/plugins/knowledge-watch` |
+| Screens | `/knowledge-watch` (Weekly digest, News, Topics, Settings), the Settings page `/settings/plugins/knowledge-watch` |
 | Data | `data/KnowledgeWatch/interests.json`, `items.json`, `digests.json`; one note a week in `Work/Knowledge Watch/` |
 
 It reads no other plugin: no Entities registry, no Strategic Entities list (operator's
