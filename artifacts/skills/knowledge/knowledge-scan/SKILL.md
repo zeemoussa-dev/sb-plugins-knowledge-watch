@@ -1,7 +1,7 @@
 ---
 name: knowledge-scan
 description: Scans the open web for each knowledge category and topic the CBO chose on Knowledge Watch -- AI models and providers, hyperscalers and cloud, sovereign AI and policy, data centres and GPUs, the Gulf and UAE market, competitors and partners -- and files dated, sourced news items. Use in the Knowledge scan Pipeline.
-version: 1.2.0
+version: 1.3.0
 author: knowledge-watch
 license: MIT
 platforms: [linux, windows]
@@ -14,10 +14,11 @@ metadata:
 
 ## Steps
 
-1. Call `knowledge_watch_scan_brief`. In the Knowledge scan Pipeline, call it with
-   `next` true: it hands you one category, the next one this run has not scanned, and
-   you scan only that one. Asked for one category or topic, pass its `category` and
-   `topic` instead. If `categories` is empty, reply `NOTHING DUE` and
+0. In the Knowledge scan Pipeline's step, call only `knowledge_watch_start_scan` and
+   reply with what it answered. The plugin then asks you, once per category, to scan
+   that one category: that is the turn the steps below are for.
+1. Call `knowledge_watch_scan_brief` with the `category` (and `topic`) you were asked
+   for. If `categories` is empty, reply `NOTHING DUE` and
    stop. Each category carries its `topics`, the `since` date to look back to, the
    `prompt` to scan it with and what it `already_filed`. Each topic carries how the
    CBO tuned it:

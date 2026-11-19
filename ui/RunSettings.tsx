@@ -85,7 +85,7 @@ function PipelineCard({ view, mayRun, mayAdmin, scanRunning, onChanged }: {
         {run && (
           <ProgressBar value={view.kind === 'scan' ? filedCount : 0} max={Math.max(expected, 1)}
                        label={view.kind === 'scan'
-                         ? `${run.state === 'requested' ? 'Starting' : 'Running'} since ${when(run.started_at)}: ${filedCount} of ${expected || '?'} categories filed`
+                         ? `${run.state === 'requested' ? 'Starting' : 'Running'} since ${when(run.started_at)}: ${filedCount} of ${expected || '?'} categories filed${run.doing ? ` · now ${run.doing}` : ''}`
                          : `Writing the digest since ${when(run.started_at)}`}
                        format={(value, max) => `${value} of ${max}`} />
         )}

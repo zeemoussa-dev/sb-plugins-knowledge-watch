@@ -55,7 +55,10 @@ def one(api, category: str, topic: str = "", *, by: str = "") -> dict:
 def everything(api, *, by: str = "") -> dict:
     if runs.open_run(api, "scan"):
         raise Refused("A scan is running already.", 409)
+    # Recorded first: the Pipeline's step finds this run and carries it on.
+    run = runs.request(api, "scan", "run now", by=by)
     started, why = pipelines.fire(api, pipelines.SCAN)
     if not started:
+        runs.finish(api, run["id"], "", failed=f"the scan did not start: {why}")
         raise Refused(f"The scan did not start: {why}.", 409)
-    return runs.request(api, "scan", "run now", by=by)
+    return run

@@ -134,6 +134,10 @@ export interface Run {
   refused: Record<string, number>;
   problem: string;
   reply: string;
+  /** What a background scan is doing now: the category and the attempt. */
+  doing?: string;
+  /** Each category a background scan could not file, and why. */
+  failures?: Record<string, string>;
 }
 
 export type PipelineHealth = 'missing' | 'no job' | 'running' | 'failed' | 'stopped' | 'off' | 'on';

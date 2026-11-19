@@ -38,8 +38,10 @@ def _write(api, rows: list[dict]) -> None:
 
 
 def _stale(run: dict) -> bool:
-    started = items.parse(run.get("started_at"))
-    return bool(started and items.now() - started > timedelta(minutes=STALE_MINUTES))
+    """Open, and no sign of life for `STALE_MINUTES`: a whole scan takes longer than
+    that, so its last heartbeat counts, not when it started."""
+    seen = items.parse(run.get("touched_at")) or items.parse(run.get("started_at"))
+    return bool(seen and items.now() - seen > timedelta(minutes=STALE_MINUTES))
 
 
 def state_of(run: dict) -> str:
@@ -139,6 +141,11 @@ def problem(api, kind: str, text: str) -> dict:
     found = open_run(api, kind) or begin(api, kind, [])
 
     def fail(row):
+        if row.get("background"):
+            # The scanner goes on to the next category and decides the run's end.
+            note = " ".join(str(text or "").split())[:300]
+            row["problem"] = "; ".join(p for p in (row.get("problem"), note) if p)[:600]
+            return
         row["state"] = "failed"
         row["problem"] = " ".join(str(text or "").split())[:600] or "the agent could not go on"
         row["finished_at"] = items.stamp()
@@ -166,3 +173,37 @@ def just_finished(api) -> bool:
         return False
     finished = items.parse(last.get("finished_at"))
     return bool(finished and items.now() - finished < timedelta(minutes=STALE_MINUTES))
+
+
+def touch(api, doing: str) -> None:
+    """The background scan is alive, and what it is doing now."""
+    found = open_run(api, "scan")
+    if found is not None:
+        _update(api, found["id"], lambda row: row.update(touched_at=items.stamp(), doing=doing[:120]))
+
+
+def category_failed(api, run_id: str, category: str, why: str) -> None:
+    def mark(row):
+        row.setdefault("failures", {})[category] = " ".join(str(why or "").split())[:300]
+    _update(api, run_id, mark)
+
+
+def end_scan(api, run_id: str, failed: dict, names: dict) -> None:
+    """The background scan went through every category: done, or failed naming each
+    category that did not file and why."""
+    def close(row):
+        row["doing"] = ""
+        if failed:
+            row["state"] = "failed"
+            summary = "; ".join(f"{names.get(c, c)}: {why or 'did not file'}" for c, why in failed.items())
+            # What the researcher itself reported (report_problem) is kept after it.
+            reported = row.get("problem") or ""
+            row["problem"] = (summary + (f". Reported: {reported}" if reported else ""))[:600]
+        elif row["state"] in ("running", "requested"):
+            row["state"] = "done"
+        row["finished_at"] = row.get("finished_at") or items.stamp()
+    _update(api, run_id, close)
+
+
+def mark_background(api, run_id: str) -> None:
+    _update(api, run_id, lambda row: row.update(background=True))

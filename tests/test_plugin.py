@@ -14,7 +14,8 @@ from tests.conftest import call, route
 
 REPO = Path(__file__).resolve().parent.parent
 TOOLS = {"scan_brief", "save_items", "digest_facts", "save_digest", "recent_items", "report_problem",
-         "digest", "topics", "add_topic", "remove_topic", "save_research", "research_notes", "refresh_now"}
+         "digest", "topics", "add_topic", "remove_topic", "save_research", "research_notes", "refresh_now",
+         "start_scan"}
 
 
 def story(n: int, **extra) -> dict:
@@ -150,6 +151,7 @@ def test_a_digest_is_filed_even_when_the_vault_refuses_the_note(registered):
     def refuse(*args, **kwargs):
         raise PermissionError("hidden folder")
     api.vault.write_note = refuse
+    call(api, "save_items", category="cloud", items=[{"url": "https://a.example/x", "title": "X", "summary": "s"}])
     saved = call(api, "save_digest", sections={"Headlines": "Quiet week."})
     assert saved["saved"] and saved["note"].startswith("not filed in the vault")
 

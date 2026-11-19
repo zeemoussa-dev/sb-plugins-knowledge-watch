@@ -47,6 +47,7 @@ def test_research_is_filed_in_its_place_newest_on_top(registered, tmp_path):
 def test_an_expert_reads_the_digest(registered):
     api = registered
     assert call(api, "digest")["digest"] is None
+    call(api, "save_items", category="cloud", items=[{"url": "https://a.example/x", "title": "X", "summary": "s"}])
     call(api, "save_digest", sections={"Headlines": "Quiet week."})
     found = call(api, "digest")
     assert "Quiet week." in found["digest"]["markdown"] and len(found["weeks"]) == 1

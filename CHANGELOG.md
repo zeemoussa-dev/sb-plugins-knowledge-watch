@@ -2,6 +2,31 @@
 
 All notable changes to the Knowledge Watch plugin.
 
+## [1.5.0] - 2026-11-19
+
+The operator: Knowledge Watch sent a long digest on Sunday 15 November with no news, only "everything is quiet". Why was it sent, and why was there no news? The install's own records showed this:
+
+| Run | What happened |
+|---|---|
+| 15 Nov scan | Failed in 5 s at category 1 (`ModelConnectionError`). The Pipeline stopped there, so the other 11 steps were not reached and nothing was filed. |
+| 15 Nov weekly | Had no items in its window. It still wrote a "quiet" digest in every section and sent it. |
+| 17 Nov scan | Fine: all six categories, 12 items. Its NOTHING DUE was only the reply of the spare steps 7 to 12, which is what the report shows. |
+| 19 Nov scan | Filed 6 items, then stopped at category 3 (`ReadError`), so categories 4 to 6 were not reached. |
+
+- fix: **one category's failure no longer stops the others.** Knowledge scan now has one step, which calls the new `knowledge_watch_start_scan`. The plugin then runs the scan itself, in the background (`backend/scanner.py`): one turn of the Knowledge Researcher per category (`api.agents.run`), each with its own budget.
+  - A turn that fails (a connection or read error) or ends without filing is tried once more, 30 seconds later.
+  - A category that fails twice is recorded with its reason, and the scan goes on to the next.
+  - The run ends **done**, or **failed** naming each category that did not file and why. What the researcher itself reported is kept after it.
+  - The Settings tab shows which category and attempt is running.
+  - Run now and the schedule both go through it. A run is recorded before the Pipeline is fired, so its step carries that run on instead of starting a second one.
+- fix: **a week with no items sends nothing.** This was the operator's choice, failed or not: why the scans filed nothing is on the Settings tab.
+  - The weekly's last reply is then exactly `NOTHING`, which the framework sends to no one (BUG-121 fix).
+  - `knowledge_watch_digest_facts` says so when `item_count` is 0, and `knowledge_watch_save_digest` refuses to file a digest with no items. An older Pipeline instruction kept on an install cannot send an empty digest either.
+- fix: **a long scan is not shown as stopped.** A run counts as stopped after 45 minutes with no sign of life, measured from the background scan's last heartbeat, not from its start.
+- change: the scan Skill (1.3.0), the digest Skill (1.2.0), both souls and both Pipelines' instructions say how this works.
+- not changed: **the 4-hour delay.** Every `CRON_TZ=Asia/Dubai` job on the install runs 4 hours late: the 06:00 Dubai scan runs at 10:00, and the 18:00 weekly at 22:00. The cause is in the framework: its scheduler compares the job's Dubai timestamp with UTC as text (`schedules_store.due_jobs`). The operator chose to leave it for now; nothing is logged.
+- tests: 45.
+
 ## [1.4.1] - 2026-11-13
 
 From the first runs on the live install (2026-11-13). The first scan on 1.4.0 filed 17 items across six categories in 30 minutes. The first real digest was written from them, filed in the vault, and sent by chat and email.

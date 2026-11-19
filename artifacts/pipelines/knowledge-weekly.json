@@ -12,7 +12,7 @@
       "depends_on": [],
       "type": "producer",
       "agent_id": "knowledge-editor",
-      "instruction": "Follow the knowledge-digest Skill: call `knowledge_watch_digest_facts`, write each section it lists, and file the digest with `knowledge_watch_save_digest`. Write nothing any other way and send nothing yourself. Your last reply is delivered as the digest: reply with exactly the markdown the save answered, and nothing else."
+      "instruction": "Follow the knowledge-digest Skill: call `knowledge_watch_digest_facts`, write each section it lists, and file the digest with `knowledge_watch_save_digest`. Write nothing any other way and send nothing yourself. Your last reply is delivered as the digest: reply with exactly the markdown the save answered, and nothing else. When there are no items, save nothing and reply with exactly NOTHING, so nothing is sent."
     }
   ]
 }

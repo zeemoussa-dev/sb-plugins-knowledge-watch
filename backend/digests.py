@@ -81,6 +81,10 @@ def facts(api) -> dict:
         "sections": sections(api),
         "prompt": settings.get(api, "digest_prompt"),
         "item_count": total,
+        # The weekly's last reply is what is sent: NOTHING sends nothing (framework BUG-121 fix).
+        "reply_when_empty": "NOTHING",
+        "note": ("No items were filed since the last digest. File no digest and reply with exactly NOTHING, so "
+                 "nothing is sent.") if total == 0 else "",
         "categories": grouped,
         "previous_headlines": (previous or {}).get("sections", {}).get(HEADLINES, ""),
         "scans": [{k: s.get(k) for k in ("at", "category", "saved")}
@@ -107,6 +111,9 @@ def save(api, sent_sections, *, sources=None) -> dict:
     if not chosen[HEADLINES]:
         raise ValueError(f"the digest needs its {HEADLINES} section")
     start, end = window(api)
+    if not any(start < (items.parse(i.get("found_at")) or end) <= end for i in items.all_items(api)):
+        raise ValueError("No items were filed since the last digest, so there is no digest to file: reply with "
+                         "exactly NOTHING, so nothing is sent.")
     week = week_label(end)
     text = markdown(week, chosen, order)
     count = sum(1 for i in items.all_items(api) if start < (items.parse(i.get("found_at")) or end) <= end)

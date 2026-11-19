@@ -1,139 +1,18 @@
 {
   "id": "knowledge-scan",
   "name": "Knowledge scan",
-  "description": "Three times a week (Sunday, Tuesday and Thursday at 06:00 Dubai) the Knowledge Researcher scans the web for every knowledge category and topic the CBO chose on Knowledge Watch, one category per step, each in its own turn, and files dated, sourced items. Up to 12 categories are scanned per run; a step with no category left says so at once. Nothing is sent: the items wait for the weekly digest. Needs a web search provider.",
+  "description": "Three times a week (Sunday, Tuesday and Thursday at 06:00 Dubai) the Knowledge Researcher scans the web for every knowledge category and topic the CBO chose on Knowledge Watch, and files dated, sourced items. Its one step starts the scan; the plugin then runs the researcher once per category in the background, tries a failed category once more, and goes on to the next, so one error never stops the rest. Its progress and any failure are on the Knowledge Watch Settings tab. Nothing is sent. Needs a web search provider.",
   "section": "Core42",
   "schedule": "CRON_TZ=Asia/Dubai 0 6 * * 0,2,4",
   "steps": [
     {
-      "id": "scan-1",
-      "name": "Scan category 1",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
+      "id": "scan",
+      "name": "Start the scan",
+      "description": "Starts the plugin's own scan of every category, one researcher turn each, in the background.",
       "depends_on": [],
       "type": "producer",
       "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-2",
-      "name": "Scan category 2",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-1"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-3",
-      "name": "Scan category 3",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-2"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-4",
-      "name": "Scan category 4",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-3"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-5",
-      "name": "Scan category 5",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-4"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-6",
-      "name": "Scan category 6",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-5"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-7",
-      "name": "Scan category 7",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-6"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-8",
-      "name": "Scan category 8",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-7"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-9",
-      "name": "Scan category 9",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-8"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-10",
-      "name": "Scan category 10",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-9"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-11",
-      "name": "Scan category 11",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-10"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
-    },
-    {
-      "id": "scan-12",
-      "name": "Scan category 12",
-      "description": "The Knowledge Researcher scans the next category this run has not scanned yet.",
-      "depends_on": [
-        "scan-11"
-      ],
-      "type": "producer",
-      "agent_id": "knowledge-researcher",
-      "instruction": "Whatever the step before replied, follow the knowledge-scan Skill for ONE category: call `knowledge_watch_scan_brief` with `next` true. If it lists no category, reply NOTHING DUE and stop. Otherwise scan that one category with `web_search` and `read_page`, using each topic's own search terms, and file it with `knowledge_watch_save_items`, with an empty list when nothing new was found. If you cannot search, call `knowledge_watch_report_problem` first. Write nothing any other way. Reply with one line: the category and what was filed."
+      "instruction": "Call `knowledge_watch_start_scan` once, and nothing else: do not search or file anything yourself in this step. Reply with one line saying what it answered: the categories it started, or why it did not start."
     }
   ]
 }

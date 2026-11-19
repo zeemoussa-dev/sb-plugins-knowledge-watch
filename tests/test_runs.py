@@ -155,6 +155,7 @@ def test_a_refresh_is_refused_while_a_scan_runs_or_for_an_unknown_topic(register
 
 def test_the_digest_is_recorded_as_a_run(registered):
     api = registered
+    call(api, "save_items", category="cloud", items=[{"url": "https://a.example/x", "title": "X", "summary": "s"}])
     call(api, "digest_facts")
     assert runs.open_run(api, "digest") is not None
     call(api, "save_digest", sections={"Headlines": "Quiet."})

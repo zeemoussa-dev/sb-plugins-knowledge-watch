@@ -8,8 +8,8 @@ screens: [/knowledge-watch, /settings/plugins/knowledge-watch]
 
 | Pipeline | When (Dubai) | What it does |
 |---|---|---|
-| **Knowledge scan** | Sunday, Tuesday, Thursday 06:00 (`CRON_TZ=Asia/Dubai 0 6 * * 0,2,4`) | One category per step, each in its own turn. The Knowledge Researcher asks `knowledge_watch_scan_brief` for the next category, searches the web for each of its topics, reads each page, and files items with `knowledge_watch_save_items`. Up to 12 categories per run. It sends nothing. |
-| **Knowledge weekly** | Sunday 18:00 (`CRON_TZ=Asia/Dubai 0 18 * * 0`) | The Knowledge Editor calls `knowledge_watch_digest_facts`, writes the digest, and files it with `knowledge_watch_save_digest`. The digest goes on the screen and into the vault, and its last reply is the digest you receive. |
+| **Knowledge scan** | Sunday, Tuesday, Thursday 06:00 (`CRON_TZ=Asia/Dubai 0 6 * * 0,2,4`) | Its one step starts the scan. The plugin then runs the Knowledge Researcher once per category, in the background: it searches the web for each topic, reads each page, and files items with `knowledge_watch_save_items`. A category that fails is tried once more, then skipped and recorded, and the scan goes on to the next. It sends nothing. |
+| **Knowledge weekly** | Sunday 18:00 (`CRON_TZ=Asia/Dubai 0 18 * * 0`) | The Knowledge Editor calls `knowledge_watch_digest_facts`, writes the digest, and files it with `knowledge_watch_save_digest`. The digest goes on the screen and into the vault, and its last reply is the digest you receive. A week with no items sends nothing. |
 
 Both arrive **switched off**. An Admin switches them on, and changes a schedule, on the Admin settings page.
 

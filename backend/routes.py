@@ -228,10 +228,12 @@ def build_router(api) -> APIRouter:
         # A digest written while a scan is still filing misses that scan, and is sent anyway.
         if kind == "digest" and runs.open_run(api, "scan"):
             return {"started": False, "note": "a scan is running; write the digest when it has finished"}
+        # Recorded first: the Pipeline's step finds this run and carries it on.
+        caller = _caller(api) or {}
+        run = runs.request(api, kind, "run now", by=str(caller.get("name") or ""))
         started, why = pipelines.fire(api, pipeline_id)
-        if started:
-            caller = _caller(api) or {}
-            runs.request(api, kind, "run now", by=str(caller.get("name") or ""))
+        if not started:
+            runs.finish(api, run["id"], "", failed=f"it did not start: {why}")
         return {"started": started, "note": why}
 
     return router

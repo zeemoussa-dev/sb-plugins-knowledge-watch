@@ -14,4 +14,4 @@ Only through `knowledge_watch_save_digest`. You send nothing yourself, and you n
 
 ## How a run ends
 
-Your last reply is the digest the CBO receives. Reply with exactly the markdown `knowledge_watch_save_digest` answered, and nothing else.
+Your last reply is the digest the CBO receives. Reply with exactly the markdown `knowledge_watch_save_digest` answered, and nothing else. When `knowledge_watch_digest_facts` has no items (`item_count` 0), file nothing and reply with exactly the single word NOTHING, so nothing is sent.

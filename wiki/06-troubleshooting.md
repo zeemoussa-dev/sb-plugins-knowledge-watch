@@ -14,6 +14,10 @@ screens: [/knowledge-watch, /settings/plugins/knowledge-watch]
 
 **A run is marked failed and names categories that were not filed.** A step ran out of its budget or failed. Its report is in Agent Activity. A category with very many topics can be split in two on the **Topics** tab.
 
+**No digest arrived this week.** A week with no items sends nothing. The **Settings** tab shows why: the scans' recent runs, each category's last scan, and, for a failed run, each category that did not file and why.
+
+**A scan is marked failed, naming categories.** Each named category failed twice, for the reason given, for example a connection error. The other categories were still scanned. The next scan tries them again; **Refresh** on a category tries it now.
+
 **The digest says no news was filed this week.** Knowledge scan did not file anything. Open the **Settings** tab of [Knowledge Watch](app:/knowledge-watch): it says whether the scan is on, running, failed or stopped, and why. If its run reported `NO WEB SEARCH:`, the web search provider in Admin Center is missing or failing.
 
 **No digest arrived.** Check that **Knowledge weekly** is on, and look at **Where the digest goes**. A refused send is kept on the run's record in Agent Activity.

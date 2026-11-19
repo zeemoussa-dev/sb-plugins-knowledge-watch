@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 
-from . import digests, interests, items, refresh, research, runs, settings
+from . import digests, interests, items, refresh, research, runs, scanner, settings
 
 
 def _answer(value) -> str:
@@ -114,6 +114,18 @@ def register(api) -> None:
                              query=str(args.get("query") or ""), limit=50)
         return _answer({"items": found, "categories": [{"id": c["id"], "name": c["name"]}
                                                        for c in interests.read(api)]})
+
+    def start_scan(args, context=None):
+        try:
+            return _answer(scanner.start(api, "schedule"))
+        except scanner.Refused as refused:
+            return _answer({"started": False, "why": str(refused)})
+
+    api.register_agent_tool(
+        "start_scan", handler=start_scan, parameters={"type": "object", "properties": {}},
+        description=("Starts the whole Knowledge scan in the background and answers at once: the plugin runs the "
+                     "Knowledge Researcher once per category that is on, tries a failed category once more, and "
+                     "goes on to the next whatever happens. Used by the Knowledge scan Pipeline."))
 
     def digest(args, context=None):
         week = str((args or {}).get("week") or "").strip()
